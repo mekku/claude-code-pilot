@@ -142,6 +142,91 @@ You can also bind to a specific interface IP: `web 3742 192.168.1.10`.
 
 ---
 
+## Remote access via Cloudflare Tunnel (recommended)
+
+Binding to `0.0.0.0` exposes the dashboard on your local network but not the internet. For secure remote access from anywhere — phone, another machine, a coffee shop — use a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
+
+This is the recommended setup for remote work: the dashboard stays on `127.0.0.1` (never directly exposed), and Cloudflare handles TLS, authentication, and routing.
+
+### Quick start (no domain required)
+
+Install `cloudflared`:
+
+```bash
+# macOS
+brew install cloudflare/cloudflare/cloudflared
+
+# Linux
+curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+chmod +x cloudflared && sudo mv cloudflared /usr/local/bin/
+```
+
+Start the pilot's web dashboard, then in a second terminal run:
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:3742
+```
+
+Cloudflare prints a random `https://*.trycloudflare.com` URL. Open it on any device. The tunnel closes when you stop `cloudflared`.
+
+### Persistent tunnel with a custom domain
+
+If you have a domain on Cloudflare, you can get a stable URL and add Cloudflare Access (zero-trust auth) in front of the dashboard.
+
+**1. Authenticate and create a tunnel:**
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create claude-pilot
+```
+
+**2. Create `~/.cloudflared/config.yml`:**
+
+```yaml
+tunnel: <your-tunnel-id>
+credentials-file: /home/<user>/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: pilot.yourdomain.com
+    service: http://127.0.0.1:3742
+  - service: http_status:404
+```
+
+**3. Add a DNS record:**
+
+```bash
+cloudflared tunnel route dns claude-pilot pilot.yourdomain.com
+```
+
+**4. Start the tunnel:**
+
+```bash
+cloudflared tunnel run claude-pilot
+```
+
+The dashboard is now reachable at `https://pilot.yourdomain.com`.
+
+### Adding authentication (Cloudflare Access)
+
+Cloudflare Access puts a login wall in front of the tunnel — no inbound ports, no VPN.
+
+1. Go to **Cloudflare Zero Trust → Access → Applications → Add an application**
+2. Choose **Self-hosted**, set the domain to `pilot.yourdomain.com`
+3. Add a policy: allow your email address (or Google/GitHub OAuth)
+
+After this, anyone reaching `pilot.yourdomain.com` must authenticate with Cloudflare before the dashboard loads. This is separate from the pilot's own password option — you can use either, both, or neither depending on your threat model.
+
+### Run the tunnel as a background service
+
+```bash
+# Install as a system service (runs on boot)
+sudo cloudflared service install
+sudo systemctl start cloudflared   # Linux
+sudo launchctl start cloudflared   # macOS
+```
+
+---
+
 ## Telegram setup
 
 Create a bot via `@BotFather` and get your token.

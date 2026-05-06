@@ -1,4 +1,4 @@
-# Claude Code Pilot
+# Claude Code Remote Pilot
 
 Interactive Claude Code supervisor using `tmux`, Node.js, and notifications.
 
@@ -24,7 +24,7 @@ Current mode:
 Human → tmux terminal → Claude Code
               ↑
               │
-        Claude Code Pilot
+        Claude Code Remote Pilot
         - watches output
         - detects limits
         - sends notifications

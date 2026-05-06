@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.5 — 2026-05-06
+
+### Added
+- **Terminal redesign**: input is now embedded inside the terminal box (dark background, monospace font, `❯` prompt) — feels like a real terminal. After sending, focus returns to the input automatically.
+- **Full-height terminal**: terminal fills the viewport height (`calc(100vh - 210px)`) with the output scrolling above the pinned input row.
+- **Password auth**: `web [port] [host] [password]` — if a password is given, the browser shows a login screen. Token is stored in localStorage and sent as `Authorization: Bearer` on all requests (query param for SSE). `POST /api/login` is the only unauthenticated endpoint.
+
+---
+
 ## 0.4.4 — 2026-05-06
 
 ### Added

@@ -331,7 +331,7 @@ const HELP = `
   spawn <path> [name]   Start Claude at path (name defaults to dir name)
   list                  Show all sessions
   watch                 Live session monitor  (q to exit)
-  web [port] [host]     Start web dashboard  (default: 3742 127.0.0.1)
+  web [port] [host] [password]  Start web dashboard  (default: 3742 127.0.0.1)
   attach <name>         Open tmux session in this terminal
   kill <name>           Stop a session
   resume [message]      Show or set the message sent after a limit resets
@@ -445,16 +445,18 @@ ${HELP}`);
         case 'web': {
           const port = parseInt(args[0]) || 3742;
           const host = args[1] || '127.0.0.1';
+          const password = args[2] || null;
           let webServer = manager._webServer;
           if (webServer) {
             console.log(`  Web dashboard already running at http://${webServer.host}:${webServer.port}`);
             break;
           }
-          webServer = new WebServer(manager, port, host);
+          webServer = new WebServer(manager, port, host, password);
           manager._webServer = webServer;
           webServer.start();
           const url = `http://${host}:${port}`;
           console.log(`  ✓ Web dashboard started at ${url}`);
+          if (password) console.log(`  Password protected. Enter password in the browser.`);
           const opener = process.platform === 'darwin' ? 'open' : 'xdg-open';
           spawn(opener, [url], { stdio: 'ignore', detached: true }).unref();
           break;

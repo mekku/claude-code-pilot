@@ -372,9 +372,9 @@ ${HELP}`);
 
   const cwd = process.cwd();
   const defaultName = path.basename(cwd);
-  const mount = await question(setupRl, `Mount current directory as a session? (${defaultName}) [Y/n] `);
+  const mount = await question(setupRl, `Mount current directory as a session? (${defaultName}) [y/N] `);
 
-  if (isYes(mount)) {
+  if (mount === 'y' || mount === 'yes') {
     const rawName = await questionRaw(setupRl, `Session name [${defaultName}]: `);
     const session = manager.spawn(cwd, rawName || defaultName);
     console.log(`  ✓ "${session.name}" started at ${session.path}`);

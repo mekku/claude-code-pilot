@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.4.6 — 2026-05-06
+## 0.4.8 — 2026-05-06
+
+### Added
+- **Startup prompt**: asks "Open web dashboard? (Y/n)" during setup — default yes. Starts the server on `127.0.0.1:3742` and opens the browser automatically.
+- **Terminal header hint**: shows `Ctrl+B D · detach` in the terminal header bar as a reminder to detach from tmux without killing the session.
+- **"⊞ New Terminal" button**: copies `tmux attach -t <name>` to clipboard. Button briefly shows "✓ Copied" as confirmation.
+
+---
+
+## 0.4.7 — 2026-05-06
 
 ### Fixed
 - False `limit` status when a session has recovered from a prior limit hit. Root cause: `LIMIT_RE` was tested against the full 500-line tmux scrollback, so old limit text in scroll history kept re-triggering limit detection even after the session resumed. Now `LIMIT_RE` is checked against only the last 15 non-empty lines (`limitWindow`), matching the same windowed approach used for `RESPONSE_RE` and `RUNNING_RE`.

@@ -498,9 +498,18 @@ function SessionDetailScreen({ session, onBack, onKilled }) {
   const [msg, setMsg] = useState('');
   const [sending, setSending] = useState(false);
   const [killing, setKilling] = useState(false);
+  const [copyOk, setCopyOk] = useState(false);
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
   const isOffline = session.status === 'offline';
+
+  const copyAttachCmd = () => {
+    const cmd = `tmux attach -t ${session.name}`;
+    navigator.clipboard?.writeText(cmd).then(() => {
+      setCopyOk(true);
+      setTimeout(() => setCopyOk(false), 2000);
+    }).catch(() => {});
+  };
 
   // Auto-focus input on mount and when session changes
   useEffect(() => {
@@ -587,6 +596,11 @@ function SessionDetailScreen({ session, onBack, onKilled }) {
         </div>
         <div className="detail-actions">
           {!isOffline && (
+            <button className="btn btn-sm" onClick={copyAttachCmd} title={`tmux attach -t ${session.name}`}>
+              {copyOk ? '✓ Copied' : '⊞ New Terminal'}
+            </button>
+          )}
+          {!isOffline && (
             <button className="btn btn-sm" style={{ color: 'var(--error)' }} onClick={handleKill} disabled={killing}>
               {Icons.trash} {killing ? 'Ending…' : 'End'}
             </button>
@@ -602,7 +616,9 @@ function SessionDetailScreen({ session, onBack, onKilled }) {
             <span className="terminal-dot" style={{ background: '#febc2e' }} />
             <span className="terminal-dot" style={{ background: '#28c840' }} />
             <span className="terminal-title">{session.name}</span>
-            <span style={{ marginLeft: 'auto' }}><StatusPill status={session.status} /></span>
+            <span style={{ flex: 1 }} />
+            {!isOffline && <span style={{ fontSize: 10, color: 'oklch(42% 0.018 50)', fontFamily: 'var(--font-mono)', marginRight: 10 }}>Ctrl+B D · detach</span>}
+            <StatusPill status={session.status} />
           </div>
 
           <div className="terminal-body" ref={terminalRef}>

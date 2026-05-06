@@ -393,6 +393,18 @@ ${HELP}`);
     console.log(`    tmux attach -t ${session.name}\n`);
   }
 
+  const openWeb = await question(setupRl, 'Open web dashboard? (Y/n) ');
+  if (isYes(openWeb)) {
+    const webServer = new WebServer(manager, 3742, '127.0.0.1');
+    manager._webServer = webServer;
+    webServer.start();
+    const url = 'http://127.0.0.1:3742';
+    console.log(`  ✓ Web dashboard at ${url}`);
+    const opener = process.platform === 'darwin' ? 'open' : 'xdg-open';
+    spawn(opener, [url], { stdio: 'ignore', detached: true }).unref();
+    console.log('');
+  }
+
   setupRl.close();
 
   console.log('  Type help for commands.\n');

@@ -382,6 +382,30 @@ ${HELP}`);
     }
   }
 
+  // Auto-discover tmux sessions not already managed
+  try {
+    const tmuxListRaw = execSync('tmux ls -F "#{session_name}"', { encoding: 'utf8' });
+    const allTmux = tmuxListRaw.trim().split('\n').filter(Boolean);
+    const managed = new Set(manager.list().map(s => s.name));
+    const untracked = allTmux.filter(n => !managed.has(n));
+    if (untracked.length) {
+      console.log(`\n  Found ${untracked.length} untracked tmux session(s):`);
+      untracked.forEach(n => console.log(`    ${n}`));
+      const adoptAns = await question(setupRl, '  Adopt and watch these? (y/N) ');
+      if (adoptAns === 'y' || adoptAns === 'yes') {
+        for (const sessionName of untracked) {
+          try {
+            let sessionPath = '';
+            try { sessionPath = execSync(`tmux display-message -p -t "${sessionName}" '#{pane_current_path}'`, { encoding: 'utf8' }).trim(); } catch {}
+            manager.adopt(sessionName, sessionPath);
+            console.log(`  ✓ Adopted "${sessionName}"${sessionPath ? ` at ${sessionPath}` : ''}`);
+          } catch (e) { console.log(`  ✗ ${e.message}`); }
+        }
+        console.log('');
+      }
+    }
+  } catch {}
+
   const cwd = process.cwd();
   const defaultName = path.basename(cwd);
   const mount = await question(setupRl, `Mount current directory as a session? (${defaultName}) [y/N] `);

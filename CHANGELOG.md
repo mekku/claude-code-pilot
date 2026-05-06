@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.9 — 2026-05-06
+
+### Added
+- **Repo metadata in package.json**: added `repository`, `homepage`, and `bugs` fields pointing to `github.com/mekku/claude-code-remote-pilot`.
+- **Auto-discover untracked tmux sessions**: on startup, pilot lists any tmux sessions not already being watched and offers to adopt them (fetches the pane's current working directory automatically).
+- **Immediate status check on watcher start**: `Watcher.start()` now calls `_check()` immediately instead of waiting for the first 5-second tick — sessions show the correct status from the first second after adopt/spawn.
+
+---
+
 ## 0.4.8 — 2026-05-06
 
 ### Added

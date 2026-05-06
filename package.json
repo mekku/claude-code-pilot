@@ -1,8 +1,16 @@
 {
   "name": "claude-code-remote-pilot",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "Interactive Claude Code supervisor — spawn and monitor multiple Claude sessions from a single terminal.",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mekku/claude-code-remote-pilot.git"
+  },
+  "homepage": "https://github.com/mekku/claude-code-remote-pilot#readme",
+  "bugs": {
+    "url": "https://github.com/mekku/claude-code-remote-pilot/issues"
+  },
   "bin": {
     "claude-remote-pilot": "bin/claude-pilot.js"
   },

@@ -1,5 +1,10 @@
 # Claude Code Remote Pilot
 
+[![npm version](https://img.shields.io/npm/v/claude-code-remote-pilot?style=flat-square&color=orange)](https://www.npmjs.com/package/claude-code-remote-pilot)
+[![npm downloads/week](https://img.shields.io/npm/dw/claude-code-remote-pilot?style=flat-square&color=blue)](https://www.npmjs.com/package/claude-code-remote-pilot)
+[![npm total downloads](https://img.shields.io/npm/dt/claude-code-remote-pilot?style=flat-square&color=blueviolet)](https://www.npmjs.com/package/claude-code-remote-pilot)
+[![license](https://img.shields.io/npm/l/claude-code-remote-pilot?style=flat-square&color=green)](./LICENSE)
+
 Keep Claude Code running while you're away from your desk.
 
 A small self-hosted helper tool for people who run long Claude Code sessions and are tired of manually resuming after token limits.
@@ -39,11 +44,14 @@ It's just a practical helper tool for people running Claude Code for long period
 - Auto-detect Claude Code limit states and resume automatically
 - Persistent tmux-based sessions that outlive the pilot process
 - Web UI for monitoring and control from phone or any browser — with full ANSI color terminal rendering
+- **Cloudflared tunnel auto-setup** — built-in `--tunnel` flag exposes the dashboard publicly in one step, with password protection prompts and Telegram notification of the URL
+- **Message queue per session** — pre-queue prompts to be sent automatically when a session goes idle, or play them manually one by one
+- **Session labels** — assign an emoji and color accent to each session for quick visual identification
+- **Sort sessions** by status (running first) or alphabetically by name
 - Telegram notifications when sessions need attention
 - Browser desktop notifications on status changes
 - Broadcast a message to all active sessions at once
 - Lightweight, self-hosted — just Node.js and tmux
-- Experimental but surprisingly useful 👀
 
 ---
 
@@ -69,6 +77,8 @@ Very experimental. Built quickly to scratch a personal itch, so expect rough edg
 npx claude-code-remote-pilot
   │
   ├── asks: mount current directory as a session?
+  ├── asks: open web dashboard?
+  │     └── asks: expose via cloudflared tunnel?
   ├── asks: set up Telegram? (optional)
   └── opens watch dashboard automatically
 ```
@@ -77,14 +87,15 @@ Watch opens immediately. Press `q` to drop to the command prompt, then `watch` t
 
 ```
   Claude Code Remote Pilot
+  Tunnel: https://abc-xyz.trycloudflare.com  local: http://127.0.0.1:3742
   ───────────────────────────────────────────────────────────────────
   #  SESSION             STATUS          UP       USAGE / RESET
   ───────────────────────────────────────────────────────────────────
-   1 api-refactor        running         12m      ↑1.2k ↓890
+   1 🔧 api-refactor     running         12m      ↑1.2k ↓890
    2 mobile-app          limit 3m        1h 4m    resets 2:00 AM
    3 old-project         offline         —
   ───────────────────────────────────────────────────────────────────
-  [1-3]: select session   q: exit watch
+  [1-3]: select session   w: web ui   q: exit watch
 ```
 
 Press a number to select a session:
@@ -145,11 +156,6 @@ sudo dnf install tmux
 sudo pacman -S tmux
 ```
 
-**Windows (WSL):**
-```bash
-sudo apt update && sudo apt install tmux
-```
-
 ---
 
 ## Commands
@@ -158,8 +164,8 @@ sudo apt update && sudo apt install tmux
 |---|---|
 | `spawn <path> [name]` | Start Claude at a path. Name defaults to the directory name. |
 | `list` | One-shot status of all sessions. |
-| `watch` | Live dashboard with offline session history. Press a number to select, `q` to exit. |
-| `web [port] [host]` | Start the web dashboard. Defaults to `127.0.0.1:3742`. Use `0.0.0.0` to expose on the network. |
+| `watch` | Live dashboard. Press a number to select, `q` to exit. |
+| `web [port] [host] [password] [--tunnel]` | Start the web dashboard. Defaults to `127.0.0.1:3742`. Add `--tunnel` to start a cloudflared public tunnel automatically. |
 | `attach <name>` | Open a tmux session in the current terminal. |
 | `kill <name>` | Stop a session. |
 | `help` | Show command reference. |
@@ -178,65 +184,107 @@ claude-pilot> web
 
 The dashboard shows all sessions (live and offline), lets you:
 
-- View terminal output with **full ANSI color rendering** (24-bit color, bold, dim, italic) — looks like the real terminal
-- Send a message to Claude directly from the browser (or press Esc / ^C / ^D)
+- View terminal output with **full ANSI color rendering** (24-bit color, bold, dim, italic)
+- Send a message to Claude directly from the browser (Esc / ↵ / ^C / ^D key buttons included)
 - **Broadcast** a message to all active sessions at once
 - Spawn new sessions with a name, path, and optional initial prompt
-- Kill sessions
+- Kill / respawn sessions
 - See a live activity log of status transitions
 - Receive **browser desktop notifications** when any session needs input or hits a usage limit
 
-By default the server binds to `127.0.0.1` — local only. To access from other devices on your network:
+### Session labels
+
+In the session detail sidebar, assign a label to any session:
+
+- **Emoji** — shown as a prefix on the session card and in the detail title (e.g. `🔧 api-refactor`)
+- **Color** — 9-color palette; renders as a colored left border on cards and the sessions table
+
+Labels are saved permanently to `~/.claude-remote-pilot.json`.
+
+### Sort order
+
+Use the **Status / Name** toggle in the dashboard header to sort sessions:
+
+- **Status** (default): running → needs response → idle → limit → offline
+- **Name**: alphabetical
+
+Choice is saved across page reloads.
+
+### Message queue
+
+Each session has a message queue accessible in the session detail view:
+
+- **Enqueue** prompts to be delivered later
+- **▶ Play** button on the first item sends it immediately (manual mode)
+- **Auto-feed** toggle: automatically sends the next queued message each time the session transitions to idle or needs-response — useful for chaining a series of tasks without babysitting
 
 ```
-claude-pilot> web 3742 0.0.0.0
-  ✓ Web dashboard started at http://0.0.0.0:3742
+Queue  [3]                                      [⚡ Auto-feed on]
+┌─────────────────────────────────────────────────────────────┐
+│ ▶  next → Review the implementation for edge cases      ✕  │
+│ 2  Write unit tests for the new functions               ✕  │
+│ 3  Commit with a descriptive message                    ✕  │
+└─────────────────────────────────────────────────────────────┘
+[ Type a message to queue…                      ] [+ Enqueue]
 ```
-
-You can also bind to a specific interface IP: `web 3742 192.168.1.10`.
 
 ---
 
-## Remote access via Cloudflare Tunnel (recommended)
+## Cloudflared tunnel
 
-Binding to `0.0.0.0` exposes the dashboard on your local network but not the internet. For secure remote access from anywhere — phone, another machine, a coffee shop — use a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
+The simplest way to access the dashboard remotely. During startup the pilot asks:
 
-This is the recommended setup for remote work: the dashboard stays on `127.0.0.1` (never directly exposed), and Cloudflare handles TLS, authentication, and routing.
+```
+Open web dashboard? (Y/n) y
+Expose publicly via cloudflared tunnel? (y/N) y
 
-### Quick start (no domain required)
+  ⚠  Public tunnel exposes your dashboard to the internet.
+  Set a password (strongly recommended, Enter to skip): ••••••••
+  Password protection enabled.
 
-Install `cloudflared`:
+  ✓ Web dashboard at http://127.0.0.1:3742
+  Starting cloudflared tunnel...
+  ✓ Tunnel ready: https://abc-xyz.trycloudflare.com
+    Note: first visit may show a Cloudflare warning — click "Proceed" to open the dashboard.
+  ✓ Tunnel URL sent via Telegram.
+```
 
+The tunnel URL is also shown live in the watch mode TUI and sent via Telegram (if configured).
+
+Or start a tunnel from the REPL at any time:
+
+```
+claude-pilot> web 3742 127.0.0.1 mypassword --tunnel
+  ✓ Web dashboard started at http://127.0.0.1:3742
+  Password protection enabled.
+  Starting cloudflared tunnel...
+  ✓ Tunnel ready: https://abc-xyz.trycloudflare.com
+```
+
+### Install cloudflared
+
+**macOS:**
 ```bash
-# macOS
 brew install cloudflare/cloudflare/cloudflared
-
-# Linux
-curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
-chmod +x cloudflared && sudo mv cloudflared /usr/local/bin/
 ```
 
-Start the pilot's web dashboard, then in a second terminal run:
-
+**Linux:**
 ```bash
-cloudflared tunnel --url http://127.0.0.1:3742
+curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+  -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared
 ```
-
-Cloudflare prints a random `https://*.trycloudflare.com` URL. Open it on any device. The tunnel closes when you stop `cloudflared`.
 
 ### Persistent tunnel with a custom domain
 
-If you have a domain on Cloudflare, you can get a stable URL and add Cloudflare Access (zero-trust auth) in front of the dashboard.
+For a stable URL, use a named tunnel with your own domain on Cloudflare:
 
 **1. Authenticate and create a tunnel:**
-
 ```bash
 cloudflared tunnel login
 cloudflared tunnel create claude-pilot
 ```
 
 **2. Create `~/.cloudflared/config.yml`:**
-
 ```yaml
 tunnel: <your-tunnel-id>
 credentials-file: /home/<user>/.cloudflared/<tunnel-id>.json
@@ -247,38 +295,13 @@ ingress:
   - service: http_status:404
 ```
 
-**3. Add a DNS record:**
-
+**3. Add DNS and run:**
 ```bash
 cloudflared tunnel route dns claude-pilot pilot.yourdomain.com
-```
-
-**4. Start the tunnel:**
-
-```bash
 cloudflared tunnel run claude-pilot
 ```
 
-The dashboard is now reachable at `https://pilot.yourdomain.com`.
-
-### Adding authentication (Cloudflare Access)
-
-Cloudflare Access puts a login wall in front of the tunnel — no inbound ports, no VPN.
-
-1. Go to **Cloudflare Zero Trust → Access → Applications → Add an application**
-2. Choose **Self-hosted**, set the domain to `pilot.yourdomain.com`
-3. Add a policy: allow your email address (or Google/GitHub OAuth)
-
-After this, anyone reaching `pilot.yourdomain.com` must authenticate with Cloudflare before the dashboard loads.
-
-### Run the tunnel as a background service
-
-```bash
-# Install as a system service (runs on boot)
-sudo cloudflared service install
-sudo systemctl start cloudflared   # Linux
-sudo launchctl start cloudflared   # macOS
-```
+Add **Cloudflare Access** in front for zero-trust authentication (no inbound ports, no VPN).
 
 ---
 
@@ -299,6 +322,10 @@ export TELEGRAM_BOT_TOKEN="your-token"
 export TELEGRAM_CHAT_ID="your-chat-id"
 npx claude-code-remote-pilot
 ```
+
+Telegram notifications are sent for:
+- Session status changes (limit hit, needs response)
+- Cloudflared tunnel URL when it comes online
 
 ---
 
@@ -335,6 +362,8 @@ Start Claude without `--dangerously-skip-permissions` unless you know what you'r
 - sends `continue` after limit resets
 - does **not** auto-approve permissions or execute arbitrary commands
 
+When using the tunnel feature, always set a password. Anyone with the URL can control your sessions.
+
 ---
 
 ## Roadmap
@@ -344,16 +373,18 @@ Start Claude without `--dangerously-skip-permissions` unless you know what you'r
 - [x] Telegram notifications
 - [x] interactive REPL — spawn, watch, attach, kill
 - [x] multi-session support
-- [x] web dashboard — `web [port]` command, React SPA, SSE live updates
+- [x] web dashboard — React SPA, SSE live updates, ANSI color rendering
 - [x] persistent session history with offline session display
-- [x] ANSI color terminal rendering in browser
 - [x] browser desktop notifications on status changes
 - [x] broadcast message to all sessions
 - [x] auto-discover untracked tmux sessions on startup
+- [x] cloudflared tunnel auto-setup with password protection
+- [x] message queue per session with auto-feed mode
+- [x] session labels — emoji + color accent
+- [x] sort sessions by status or name
 - [ ] auto-yes rules — confirm prompts automatically by pattern
 - [ ] smarter retry logic
 - [ ] usage statistics and session timeline
-- [ ] remote command queue
 - [ ] pluggable notification providers
 
 ---

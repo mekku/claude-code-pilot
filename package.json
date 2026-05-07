@@ -22,7 +22,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "start": "node bin/claude-pilot.js"
+    "start": "node bin/claude-pilot.js",
+    "test": "node --test test/config.test.js test/webserver.test.js"
   },
   "keywords": [
     "claude-code",

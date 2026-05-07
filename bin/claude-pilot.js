@@ -8,6 +8,7 @@ const readline = require('readline');
 const SessionManager = require('../lib/SessionManager');
 const WebServer = require('../lib/WebServer');
 const config = require('../lib/config');
+const notifier = require('../lib/notifier');
 
 // ─── dependency checks ────────────────────────────────────────────────────────
 
@@ -31,6 +32,13 @@ function tmuxInstallCmd() {
   if (p === 'arch') return 'sudo pacman -S --noconfirm tmux';
   if (p === 'fedora') return 'sudo dnf install -y tmux';
   return 'sudo apt-get install -y tmux';
+}
+
+function cloudflaredInstallCmd() {
+  const p = detectPlatform();
+  if (p === 'macos') return 'brew install cloudflare/cloudflare/cloudflared';
+  if (p === 'arch') return 'yay -S cloudflared';
+  return 'curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared';
 }
 
 function isYes(answer) { return answer === '' || answer === 'y' || answer === 'yes'; }
@@ -146,7 +154,7 @@ function buildAllSessions(manager) {
   return [...active, ...offline];
 }
 
-function renderWatchTable(allSessions, selectedIdx) {
+function renderWatchTable(allSessions, selectedIdx, webServer = null) {
   const NW = 18, SW = 14, UW = 7, TW = 16;
   const bar = '  ' + '─'.repeat(NW + SW + UW + TW + 10);
   const header = `  ${'#'.padEnd(3)}${'SESSION'.padEnd(NW)}  ${'STATUS'.padEnd(SW)}  ${'UP'.padEnd(UW)}  ${'USAGE / RESET'.padEnd(TW)}`;
@@ -173,7 +181,16 @@ function renderWatchTable(allSessions, selectedIdx) {
     footer = `  [1-${Math.min(allSessions.length, 9)}]: select session   w: web ui   q: exit watch`;
   }
 
-  return ['\n', '  Claude Code Remote Pilot', bar, header, bar, ...rows, bar, footer, ''].join('\n');
+  const lines = ['\n', '  Claude Code Remote Pilot'];
+  if (webServer) {
+    if (webServer._tunnelUrl) {
+      lines.push(`  ${C.blue}Tunnel${C.reset}: ${webServer._tunnelUrl}  ${C.dim}local: http://127.0.0.1:${webServer.port}${C.reset}`);
+    } else {
+      lines.push(`  ${C.dim}Web UI: http://${webServer.host}:${webServer.port}${C.reset}`);
+    }
+  }
+  lines.push(bar, header, bar, ...rows, bar, footer, '');
+  return lines.join('\n');
 }
 
 function startWatch(manager, rl) {
@@ -184,7 +201,7 @@ function startWatch(manager, rl) {
   function draw() {
     allSessions = buildAllSessions(manager);
     process.stdout.write('\x1B[2J\x1B[0f');
-    process.stdout.write(renderWatchTable(allSessions, selectedIdx));
+    process.stdout.write(renderWatchTable(allSessions, selectedIdx, manager._webServer));
   }
 
   function startTimer() {
@@ -206,7 +223,7 @@ function startWatch(manager, rl) {
 
   function redraw() {
     process.stdout.write('\x1B[2J\x1B[0f');
-    process.stdout.write(renderWatchTable(allSessions, selectedIdx));
+    process.stdout.write(renderWatchTable(allSessions, selectedIdx, manager._webServer));
   }
 
   function onKeypress(str, key) {
@@ -328,15 +345,15 @@ async function handleExit(manager, rl) {
 // ─── REPL ─────────────────────────────────────────────────────────────────────
 
 const HELP = `
-  spawn <path> [name]   Start Claude at path (name defaults to dir name)
-  list                  Show all sessions
-  watch                 Live session monitor  (q to exit)
-  web [port] [host] [password]  Start web dashboard  (default: 3742 127.0.0.1)
-  attach <name>         Open tmux session in this terminal
-  kill <name>           Stop a session
-  resume [message]      Show or set the message sent after a limit resets
-  help                  Show this help
-  exit                  Quit pilot  (asks whether to kill sessions)
+  spawn <path> [name]                        Start Claude at path (name defaults to dir name)
+  list                                       Show all sessions
+  watch                                      Live session monitor  (q to exit)
+  web [port] [host] [password] [--tunnel]    Start web dashboard  (default: 3742 127.0.0.1)
+  attach <name>                              Open tmux session in this terminal
+  kill <name>                                Stop a session
+  resume [message]                           Show or set the message sent after a limit resets
+  help                                       Show this help
+  exit                                       Quit pilot  (asks whether to kill sessions)
 `;
 
 // ─── main ─────────────────────────────────────────────────────────────────────
@@ -419,13 +436,50 @@ ${HELP}`);
 
   const openWeb = await question(setupRl, 'Open web dashboard? (Y/n) ');
   if (isYes(openWeb)) {
-    const webServer = new WebServer(manager, 3742, '127.0.0.1');
+    let webPassword = null;
+    let useTunnel = false;
+
+    const tunnelAns = await question(setupRl, 'Expose publicly via cloudflared tunnel? (y/N) ');
+    useTunnel = tunnelAns === 'y' || tunnelAns === 'yes';
+
+    if (useTunnel && !has('cloudflared')) {
+      console.log(`\n  cloudflared not found. Install it:\n    ${cloudflaredInstallCmd()}\n  Continuing without tunnel.\n`);
+      useTunnel = false;
+    }
+
+    if (useTunnel) {
+      console.log('\n  ⚠  Public tunnel exposes your dashboard to the internet.');
+      const pwAns = await questionRaw(setupRl, '  Set a password (strongly recommended, Enter to skip): ');
+      if (pwAns) {
+        webPassword = pwAns;
+        console.log('  Password protection enabled.\n');
+      } else {
+        console.log('  ⚠  No password set — anyone with the URL can control your sessions!\n');
+      }
+    }
+
+    const webServer = new WebServer(manager, 3742, '127.0.0.1', webPassword);
     manager._webServer = webServer;
     webServer.start();
-    const url = 'http://127.0.0.1:3742';
-    console.log(`  ✓ Web dashboard at ${url}`);
+    const localUrl = 'http://127.0.0.1:3742';
+    console.log(`  ✓ Web dashboard at ${localUrl}`);
+
+    if (useTunnel) {
+      console.log('  Starting cloudflared tunnel...');
+      webServer.startTunnel().then(publicUrl => {
+        console.log(`  ✓ Tunnel ready: ${publicUrl}`);
+        console.log('    Note: first visit may show a Cloudflare warning — click "Proceed" to open the dashboard.');
+        if (!webPassword) console.log('  ⚠  Reminder: no password set. Restart with a password for security.');
+        if (telegram.token && telegram.chatId) {
+          notifier.send(telegram.token, telegram.chatId,
+            `Claude Remote Pilot tunnel ready: ${publicUrl}${webPassword ? ' (password protected)' : ' ⚠ no password set'}`);
+          console.log('  ✓ Tunnel URL sent via Telegram.');
+        }
+      }).catch(e => console.log(`  ✗ Tunnel failed: ${e.message}`));
+    }
+
     const opener = process.platform === 'darwin' ? 'open' : 'xdg-open';
-    spawn(opener, [url], { stdio: 'ignore', detached: true }).unref();
+    spawn(opener, [localUrl], { stdio: 'ignore', detached: true }).unref();
     console.log('');
   }
 
@@ -479,22 +533,57 @@ ${HELP}`);
           return;
         }
         case 'web': {
-          const port = parseInt(args[0]) || 3742;
-          const host = args[1] || '127.0.0.1';
-          const password = args[2] || null;
+          const flags = args.filter(a => a.startsWith('--'));
+          const positional = args.filter(a => !a.startsWith('--'));
+          const port = parseInt(positional[0]) || 3742;
+          const host = positional[1] || '127.0.0.1';
+          const password = positional[2] || null;
+          const useTunnel = flags.includes('--tunnel');
           let webServer = manager._webServer;
           if (webServer) {
             console.log(`  Web dashboard already running at http://${webServer.host}:${webServer.port}`);
+            if (useTunnel && !webServer._tunnelProcess) {
+              if (!has('cloudflared')) { console.log(`  cloudflared not found. Install: ${cloudflaredInstallCmd()}`); break; }
+              if (!webServer.password) console.log('  ⚠  No password set — anyone with the URL can control your sessions!');
+              console.log('  Starting cloudflared tunnel...');
+              webServer.startTunnel().then(publicUrl => {
+                console.log(`  ✓ Tunnel ready: ${publicUrl}`);
+                console.log('    Note: first visit may show a Cloudflare warning — click "Proceed" to open the dashboard.');
+                if (telegram.token && telegram.chatId) {
+                  notifier.send(telegram.token, telegram.chatId,
+                    `Claude Remote Pilot tunnel ready: ${publicUrl}${webServer.password ? ' (password protected)' : ' ⚠ no password set'}`);
+                  console.log('  ✓ Tunnel URL sent via Telegram.');
+                }
+              }).catch(e => console.log(`  ✗ Tunnel failed: ${e.message}`));
+            }
             break;
           }
+          if (useTunnel && !has('cloudflared')) {
+            console.log(`  cloudflared not found. Install:\n    ${cloudflaredInstallCmd()}`);
+            break;
+          }
+          if (useTunnel && !password) console.log('  ⚠  No password set — anyone with the URL can control your sessions!');
           webServer = new WebServer(manager, port, host, password);
           manager._webServer = webServer;
           webServer.start();
           const url = `http://${host}:${port}`;
           console.log(`  ✓ Web dashboard started at ${url}`);
-          if (password) console.log(`  Password protected. Enter password in the browser.`);
+          if (password) console.log('  Password protection enabled.');
           const opener = process.platform === 'darwin' ? 'open' : 'xdg-open';
           spawn(opener, [url], { stdio: 'ignore', detached: true }).unref();
+          if (useTunnel) {
+            console.log('  Starting cloudflared tunnel...');
+            webServer.startTunnel().then(publicUrl => {
+              console.log(`  ✓ Tunnel ready: ${publicUrl}`);
+              console.log('    Note: first visit may show a Cloudflare warning — click "Proceed" to open the dashboard.');
+              if (!password) console.log('  ⚠  Reminder: add a password with: web <port> <host> <password> --tunnel');
+              if (telegram.token && telegram.chatId) {
+                notifier.send(telegram.token, telegram.chatId,
+                  `Claude Remote Pilot tunnel ready: ${publicUrl}${password ? ' (password protected)' : ' ⚠ no password set'}`);
+                console.log('  ✓ Tunnel URL sent via Telegram.');
+              }
+            }).catch(e => console.log(`  ✗ Tunnel failed: ${e.message}`));
+          }
           break;
         }
         case 'attach': {

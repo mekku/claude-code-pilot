@@ -24,3 +24,9 @@
 - [x] SessionManager.js: command param in spawn(), respawn() method
 - [x] WebServer.js: command in POST /api/sessions, POST /api/sessions/:name/respawn
 - [x] ui.html: Respawn button for offline sessions, command dropdown in Create form, Agent field in session info
+
+## Completed (v0.5.7 → v0.6.0 patch)
+- [x] WebServer.js: startTunnel(), stopTunnel(), stop() calls stopTunnel()
+- [x] bin/claude-pilot.js: cloudflaredInstallCmd(), startup tunnel prompts with password recommendation
+- [x] bin/claude-pilot.js: `web --tunnel` flag in REPL command
+- [x] bin/claude-pilot.js: Telegram notification when tunnel URL is ready

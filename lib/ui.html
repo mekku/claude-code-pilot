@@ -1094,6 +1094,21 @@ function App() {
     return () => { if (esRef.current) esRef.current.close(); };
   }, []);
 
+  // Fallback polling — loads sessions immediately and keeps them fresh when
+  // SSE is blocked (e.g. through a Cloudflare tunnel that buffers streams).
+  useEffect(() => {
+    let mounted = true;
+    const poll = () => {
+      apiFetch('/api/sessions', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => { if (mounted) setSessions(data); })
+        .catch(() => {});
+    };
+    poll();
+    const t = setInterval(poll, 5000);
+    return () => { mounted = false; clearInterval(t); };
+  }, []);
+
   const handleLogin = useCallback(() => {
     setNeedsLogin(false);
     apiFetch('/api/status').then(r => r.json()).then(setServerStatus).catch(() => {});

@@ -30,3 +30,9 @@
 - [x] bin/claude-pilot.js: cloudflaredInstallCmd(), startup tunnel prompts with password recommendation
 - [x] bin/claude-pilot.js: `web --tunnel` flag in REPL command
 - [x] bin/claude-pilot.js: Telegram notification when tunnel URL is ready
+
+## Completed (v0.5.14)
+- [x] config.js: CCP_CONFIG_PATH env override for test isolation
+- [x] test/config.test.js: 14 unit tests for all config functions
+- [x] test/webserver.test.js: 20 HTTP integration tests (auth, queue CRUD, auto-feed, meta)
+- [x] package.json: added "test" script (node --test)

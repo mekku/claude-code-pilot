@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.3 — 2026-05-08
+
+### Fixed
+- **Web terminal missing last lines**: `capture-pane` pads output to the full pane height, so large terminals produced hundreds of trailing empty lines that pushed real content above the visible scroll area. Trailing blank lines are now stripped before sending to the browser.
+
+---
+
 ## 0.6.2 — 2026-05-08
 
 ### Added

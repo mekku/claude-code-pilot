@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.9 — 2026-05-08
+
+### Fixed
+- **Web terminal scroll bounce**: the terminal no longer jumps to the bottom when new output arrives while you're scrolled up. Auto-scroll only fires when you're within 60 px of the bottom; scroll up even slightly and updates land silently. Scrolling back to the bottom re-enables auto-scroll. Resets on session change.
+
+---
+
 ## 0.6.8 — 2026-05-08
 
 ### Added

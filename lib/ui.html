@@ -820,6 +820,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
   const pollNowRef = useRef(() => {});
+  const userScrolledRef = useRef(false);
   const cmdHistoryRef = useRef([]);
   const historyIdxRef = useRef(-1);
   const [autoYes, setAutoYes] = useState(false);
@@ -841,6 +842,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
   useEffect(() => {
     setEmoji(session.emoji || '');
     setColor(session.color || '');
+    userScrolledRef.current = false; // reset scroll lock on session change
   }, [session.name]);
 
   const saveMeta = useCallback((e, c) => {
@@ -938,10 +940,25 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
     };
   }, [session.name, isOffline]);
 
-  // Auto-scroll terminal to bottom
+  // Auto-scroll to bottom only when the user hasn't scrolled up manually.
+  // "Near bottom" = within 60px, so a new line doesn't lock you in place mid-read.
   useEffect(() => {
-    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    const el = terminalRef.current;
+    if (!el || userScrolledRef.current) return;
+    el.scrollTop = el.scrollHeight;
   }, [output]);
+
+  // Track whether the user has scrolled away from the bottom
+  useEffect(() => {
+    const el = terminalRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+      userScrolledRef.current = !atBottom;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Auto-yes: press Enter automatically when Claude needs a response (confirms option 1 in permission menus)
   useEffect(() => {

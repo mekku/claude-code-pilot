@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.2 — 2026-05-08
+
+### Added
+- **LAN binding**: startup now asks "Expose on LAN (all interfaces)? (y/N)". Answering yes binds the web server to `0.0.0.0` and prints the LAN IP for easy mobile access.
+- **Localhost auth bypass**: when a password is set, direct requests from `127.0.0.1` / `::1` skip the token check — you're never prompted to log in from your own machine. Requests through a cloudflared tunnel still require a token (cloudflared adds `X-Forwarded-For`, which the bypass detects).
+
+---
+
 ## 0.6.1 — 2026-05-08
 
 ### Changed

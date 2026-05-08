@@ -4,6 +4,7 @@
 const { execSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const readline = require('readline');
 const SessionManager = require('../lib/SessionManager');
 const WebServer = require('../lib/WebServer');
@@ -42,6 +43,15 @@ function cloudflaredInstallCmd() {
 }
 
 function isYes(answer) { return answer === '' || answer === 'y' || answer === 'yes'; }
+
+function getLanIp() {
+  for (const ifaces of Object.values(os.networkInterfaces())) {
+    for (const iface of ifaces) {
+      if (!iface.internal && iface.family === 'IPv4') return iface.address;
+    }
+  }
+  return null;
+}
 function isNo(answer)  { return answer === '' || answer === 'n' || answer === 'no'; }
 
 async function ensureDep(rl, cmd, label, installCmd) {
@@ -439,6 +449,10 @@ ${HELP}`);
     let webPassword = null;
     let useTunnel = false;
 
+    const lanAns = await question(setupRl, 'Expose on LAN (all interfaces)? (y/N) ');
+    const bindLan = lanAns === 'y' || lanAns === 'yes';
+    const webHost = bindLan ? '0.0.0.0' : '127.0.0.1';
+
     const tunnelAns = await question(setupRl, 'Expose publicly via cloudflared tunnel? (y/N) ');
     useTunnel = tunnelAns === 'y' || tunnelAns === 'yes';
 
@@ -458,11 +472,13 @@ ${HELP}`);
       }
     }
 
-    const webServer = new WebServer(manager, 3742, '127.0.0.1', webPassword);
+    const webServer = new WebServer(manager, 3742, webHost, webPassword);
     manager._webServer = webServer;
     webServer.start();
     const localUrl = 'http://127.0.0.1:3742';
-    console.log(`  ✓ Web dashboard at ${localUrl}`);
+    const lanIp = bindLan ? getLanIp() : null;
+    const lanNote = lanIp ? `  ${C.dim}(LAN: http://${lanIp}:3742)${C.reset}` : '';
+    console.log(`  ✓ Web dashboard at ${localUrl}${lanNote}`);
 
     if (useTunnel) {
       console.log('  Starting cloudflared tunnel...');

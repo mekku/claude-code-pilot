@@ -117,6 +117,24 @@
     "source_files": ["lib/WebServer.js"]
   },
   {
+    "id": "web-git-panel",
+    "type": "capability",
+    "name": "Git Diff & Commit Panel",
+    "summary": "GET git/status, GET git/diff, POST git/commit — exposes workspace changes and allows committing from the dashboard",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js", "lib/ui.html"]
+  },
+  {
+    "id": "web-open-finder",
+    "type": "capability",
+    "name": "Open Finder",
+    "summary": "POST open-finder — runs 'open <cwd>' to open the session directory in macOS Finder",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js", "lib/ui.html"]
+  },
+  {
     "id": "web-token-auth",
     "type": "capability",
     "name": "Token Authentication",

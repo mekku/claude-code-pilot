@@ -20,7 +20,7 @@ tags:
 
 # claude-code-remote-pilot
 
-**v0.7.9** — Interactive Claude Code supervisor. Spawn and monitor multiple Claude sessions from a single terminal, with auto-resume on crash, a web dashboard for remote monitoring, and Telegram notifications.
+**v0.8.1** — Interactive Claude Code supervisor. Spawn and monitor multiple Claude sessions from a single terminal, with auto-resume on crash, a web dashboard for remote monitoring, and Telegram notifications.
 
 ## Entry Points
 

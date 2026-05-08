@@ -32,6 +32,8 @@
     "web",
     "web-serve-dashboard",
     "web-session-api",
+    "web-git-panel",
+    "web-open-finder",
     "web-token-auth",
     "web-request-flow",
     "web-token-auth-concept",
@@ -40,6 +42,8 @@
   "lib/ui.html": [
     "web",
     "web-serve-dashboard",
+    "web-git-panel",
+    "web-open-finder",
     "web-request-flow",
     "web-terminal-ui-concept"
   ],

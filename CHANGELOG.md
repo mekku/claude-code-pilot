@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.1 — 2026-05-08
+
+### Added
+- **Git diff & commit panel**: new sidebar panel (below Queue) that appears automatically when the session's working directory has uncommitted changes. Lists modified/untracked/deleted files with status icons; click a file to see a colour-coded unified diff (green additions, red removals, blue hunks). Checkboxes let you select specific files — unchecked commits everything (`git add .`). Commit message field + Commit button; panel hides when there are no changes or the directory is not a git repo.
+  - `GET /api/sessions/:name/git/status` — `git status --porcelain`
+  - `GET /api/sessions/:name/git/diff?file=` — staged, unstaged, and untracked diffs
+  - `POST /api/sessions/:name/git/commit` — `git add` + `git commit`
+- **Open Finder button**: new button in the session detail header (online and offline) that opens the session's working directory in macOS Finder.
+  - `POST /api/sessions/:name/open-finder` — `open <path>`
+
+---
+
 ## 0.8.0 — 2026-05-08
 
 ### Fixed

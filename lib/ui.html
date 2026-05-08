@@ -256,7 +256,7 @@
     .header{display:flex;}
     .content{padding:24px;}
     .session-cards{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
-    .stat-row{grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+    .stat-row{grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
     .detail-grid{grid-template-columns:1fr 280px;gap:20px;}
     .detail-header{flex-direction:row;align-items:flex-start;gap:16px;margin-bottom:20px;}
     .detail-title{font-size:20px;}
@@ -823,9 +823,8 @@ function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy,
         <div className="stat-card"><div className="stat-label">Running</div><div className="stat-value">{running.length}</div><div className="stat-sub">of {sessions.length} total</div></div>
         <div className="stat-card"><div className="stat-label">Active</div><div className="stat-value">{active.length}</div><div className="stat-sub">tmux sessions</div></div>
         <div className="stat-card"><div className="stat-label">Supervisor</div><div className="stat-value" style={{ color: 'var(--success)', fontSize: 15 }}>Online</div><div className="stat-sub">:{port}</div></div>
+        <BroadcastCard activeSessions={active.length} />
       </div>
-
-      <BroadcastBar activeSessions={active.length} />
 
       <div className="section-header">
         <h2 className="section-title">Sessions</h2>
@@ -1553,14 +1552,14 @@ function SessionsScreen({ sessions, onNavigate, sortBy, onSortChange }) {
   );
 }
 
-/* --- Broadcast Bar --- */
-function BroadcastBar({ activeSessions }) {
+/* --- Broadcast Card --- */
+function BroadcastCard({ activeSessions }) {
   const [msg, setMsg] = useState('');
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
 
   const broadcast = async () => {
-    if (!msg.trim() || sending) return;
+    if (!msg.trim() || sending || activeSessions === 0) return;
     setSending(true);
     try {
       const res = await apiFetch('/api/broadcast', {
@@ -1570,7 +1569,7 @@ function BroadcastBar({ activeSessions }) {
       });
       const data = await res.json();
       if (res.ok) {
-        setResult(`Sent to ${data.sent} session${data.sent !== 1 ? 's' : ''}`);
+        setResult(`Sent to ${data.sent}`);
         setMsg('');
         setTimeout(() => setResult(null), 3000);
       }
@@ -1578,27 +1577,24 @@ function BroadcastBar({ activeSessions }) {
     finally { setSending(false); }
   };
 
-  if (activeSessions === 0) return null;
-
   return (
-    <div className="card" style={{ padding: '14px 18px', marginBottom: 24 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', marginBottom: 10 }}>
-        Broadcast to all {activeSessions} active session{activeSessions !== 1 ? 's' : ''}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
-          className="form-input"
-          placeholder="Send the same message to every active session…"
-          value={msg}
-          onChange={e => setMsg(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && broadcast()}
-          style={{ flex: 1 }}
-        />
-        <button className="btn btn-primary btn-sm" onClick={broadcast} disabled={sending || !msg.trim()}>
-          {sending ? 'Sending…' : 'Send'}
+    <div className="stat-card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="stat-label">Broadcast</div>
+      <input
+        className="form-input"
+        placeholder={activeSessions === 0 ? 'No active sessions' : `→ all ${activeSessions} sessions…`}
+        value={msg}
+        onChange={e => setMsg(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && broadcast()}
+        disabled={activeSessions === 0}
+        style={{ fontSize: 12, padding: '5px 8px' }}
+      />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <button className="btn btn-primary btn-sm" onClick={broadcast} disabled={sending || !msg.trim() || activeSessions === 0} style={{ fontSize: 11 }}>
+          {sending ? '…' : 'Send all'}
         </button>
+        {result && <span style={{ fontSize: 11, color: 'var(--success)' }}>{result}</span>}
       </div>
-      {result && <div style={{ fontSize: 12, color: 'var(--success)', marginTop: 8 }}>{result}</div>}
     </div>
   );
 }

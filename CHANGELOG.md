@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.6 — 2026-05-09
+
+### Changed
+- **Broadcast as 4th stat card**: the broadcast-all input is now embedded directly in the stat row as the 4th card, replacing the removed Uptime card. Input and Send button sit inside the card; disabled with a "No active sessions" placeholder when nothing is running.
+
+---
+
 ## 0.8.5 — 2026-05-09
 
 ### Changed

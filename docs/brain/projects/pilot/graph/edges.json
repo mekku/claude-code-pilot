@@ -1,0 +1,61 @@
+[
+  { "from": "cli", "to": "session", "type": "calls", "label": "CLI orchestrates session lifecycle" },
+  { "from": "cli", "to": "web", "type": "calls", "label": "CLI optionally starts web server" },
+  { "from": "cli", "to": "core", "type": "calls", "label": "CLI reads/writes config" },
+  { "from": "session", "to": "core", "type": "calls", "label": "Session reads/writes config and sends notifications" },
+  { "from": "web", "to": "core", "type": "reads_from", "label": "Web reads config for sessions and token" },
+
+  { "from": "cli-launch-session", "to": "session-create", "type": "calls" },
+  { "from": "cli-launch-session", "to": "core-load-config", "type": "calls" },
+  { "from": "cli-list-sessions", "to": "core-load-config", "type": "reads_from" },
+  { "from": "cli-list-sessions", "to": "session-remove-offline", "type": "calls" },
+  { "from": "cli-list-sessions", "to": "web-serve-dashboard", "type": "calls" },
+  { "from": "cli-manage-lifecycle", "to": "session-create", "type": "calls" },
+  { "from": "cli-manage-lifecycle", "to": "session-remove-offline", "type": "calls" },
+  { "from": "cli-manage-lifecycle", "to": "web-serve-dashboard", "type": "calls" },
+
+  { "from": "session-create", "to": "core-save-config", "type": "writes_to" },
+  { "from": "session-create", "to": "session-watch-process", "type": "calls" },
+  { "from": "session-resume", "to": "session-watch-process", "type": "part_of_flow" },
+  { "from": "session-resume", "to": "core-send-notification", "type": "calls" },
+  { "from": "session-watch-process", "to": "session-resume", "type": "calls" },
+  { "from": "session-watch-process", "to": "core-send-notification", "type": "calls" },
+  { "from": "session-remove-offline", "to": "core-save-config", "type": "writes_to" },
+  { "from": "session-remove-offline", "to": "session-watch-process", "type": "calls" },
+
+  { "from": "web-serve-dashboard", "to": "web-token-auth", "type": "calls" },
+  { "from": "web-serve-dashboard", "to": "core-load-config", "type": "reads_from" },
+  { "from": "web-session-api", "to": "web-token-auth", "type": "calls" },
+  { "from": "web-session-api", "to": "core-load-config", "type": "reads_from" },
+  { "from": "web-token-auth", "to": "core-save-config", "type": "writes_to" },
+
+  { "from": "core-load-config", "to": "core-config-persistence-concept", "type": "part_of_flow" },
+  { "from": "core-save-config", "to": "core-config-persistence-concept", "type": "part_of_flow" },
+  { "from": "core-send-notification", "to": "core-notification-concept", "type": "part_of_flow" },
+  { "from": "web-token-auth", "to": "web-token-auth-concept", "type": "part_of_flow" },
+
+  { "from": "cli-launch-flow", "to": "cli-launch-session", "type": "part_of_flow" },
+  { "from": "cli-launch-flow", "to": "session-create", "type": "part_of_flow" },
+  { "from": "cli-launch-flow", "to": "session-watch-process", "type": "part_of_flow" },
+  { "from": "cli-launch-flow", "to": "core-load-config", "type": "part_of_flow" },
+  { "from": "cli-launch-flow", "to": "web-serve-dashboard", "type": "part_of_flow" },
+
+  { "from": "session-watch-flow", "to": "session-watch-process", "type": "part_of_flow" },
+  { "from": "session-watch-flow", "to": "session-resume", "type": "part_of_flow" },
+  { "from": "session-watch-flow", "to": "core-send-notification", "type": "part_of_flow" },
+  { "from": "session-watch-flow", "to": "session-auto-resume-concept", "type": "part_of_flow" },
+
+  { "from": "web-request-flow", "to": "web-token-auth", "type": "part_of_flow" },
+  { "from": "web-request-flow", "to": "web-serve-dashboard", "type": "part_of_flow" },
+  { "from": "web-request-flow", "to": "web-session-api", "type": "part_of_flow" },
+  { "from": "web-request-flow", "to": "core-load-config", "type": "part_of_flow" },
+
+  { "from": "session-watch-process", "to": "session-tmux-concept", "type": "part_of_flow" },
+  { "from": "session-create", "to": "session-tmux-concept", "type": "part_of_flow" },
+  { "from": "session-resume", "to": "session-auto-resume-concept", "type": "part_of_flow" },
+  { "from": "cli-setup-prefs-concept", "to": "core-save-config", "type": "calls" },
+
+  { "from": "web-token-no-rotation-risk", "to": "web-token-auth", "type": "has_caveat" },
+  { "from": "config-concurrent-write-risk", "to": "core-save-config", "type": "has_caveat" },
+  { "from": "resume-window-killed-risk", "to": "session-resume", "type": "has_caveat" }
+]

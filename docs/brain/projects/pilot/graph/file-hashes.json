@@ -1,0 +1,10 @@
+{
+  "bin/claude-pilot.js": "4d73b3b48aa482851b3959dcf680d44d02095cadcb1ddef547348bbe74be4725",
+  "lib/SessionManager.js": "e0cb3a63aaf6fdb5ebff408a859c8a487df18961ad78fadd84d489ab7760272e",
+  "lib/Watcher.js": "145020340b60f6ee29947bbe2fdd445dbd19a0e801e206d6465d657befa2781e",
+  "lib/WebServer.js": "47b057798e0207ca760b38dd49a97d5d698678a0552e7ccfc65c2b5a8ecc3425",
+  "lib/config.js": "1d5757f7746e592648e36323c8d6e539acc375b81ceff6fc0a39651ac64766dc",
+  "lib/notifier.js": "114656fa674846a9704b7fe7a5bd01c2a48634e0dca2bf3cc2af4828f70b6c83",
+  "test/config.test.js": "915ffcdd9e22e2c282d813ffe02a3dd1945f732c9fafbbc7ff3e2c85a8d6e562",
+  "test/webserver.test.js": "50c8b96ff1d1cd44fb0dbd2f641a01b52cf97a1548bb37ba06e26931a0f74c66"
+}

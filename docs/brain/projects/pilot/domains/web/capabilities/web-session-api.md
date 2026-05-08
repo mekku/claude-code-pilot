@@ -1,0 +1,37 @@
+---
+id: web-session-api
+name: Session API
+type: capability
+domain: web
+status: active
+confidence: source_supported
+source_files:
+  - lib/WebServer.js
+last_reviewed: 2026-05-08
+tags:
+  - type/capability
+  - domain/web
+  - status/active
+---
+
+# Session API
+
+Exposes HTTP endpoints for querying and acting on sessions from the web dashboard or external clients.
+
+## What it does
+
+- Handles `GET /api/sessions` — returns JSON list of all sessions with status
+- Handles `POST /api/sessions/:name/action` — triggers actions (attach, remove) on a session
+- Reads live session state from [[core-load-config|config]]
+- All endpoints protected by [[web-token-auth|token authentication]]
+
+## Entry point
+
+`lib/WebServer.js` — request router inside the HTTP server
+
+## Related
+
+- [[web|Web domain]]
+- [[web-serve-dashboard|Serve Dashboard]]
+- [[web-token-auth|Token Auth]]
+- [[core-load-config|Load Config]]

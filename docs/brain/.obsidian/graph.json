@@ -1,0 +1,15 @@
+{
+  "colorGroups": [
+    { "query": "tag:#type/domain", "color": { "a": 1, "rgb": 14737632 } },
+    { "query": "tag:#type/capability", "color": { "a": 1, "rgb": 3394662 } },
+    { "query": "tag:#type/flow", "color": { "a": 1, "rgb": 16744448 } },
+    { "query": "tag:#type/concept", "color": { "a": 1, "rgb": 8978278 } },
+    { "query": "tag:#type/risk", "color": { "a": 1, "rgb": 16711680 } },
+    { "query": "tag:#status/legacy", "color": { "a": 1, "rgb": 6710886 } },
+    { "query": "tag:#status/deprecated", "color": { "a": 1, "rgb": 4473924 } }
+  ],
+  "scale": 1,
+  "linksHidden": false,
+  "tagsHidden": false,
+  "attachmentsHidden": true
+}

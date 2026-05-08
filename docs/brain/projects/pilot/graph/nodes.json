@@ -1,0 +1,266 @@
+[
+  {
+    "id": "cli",
+    "type": "domain",
+    "name": "CLI",
+    "summary": "Entry point and orchestrator; bin/claude-pilot.js interactive menu and lifecycle management",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["bin/claude-pilot.js"]
+  },
+  {
+    "id": "session",
+    "type": "domain",
+    "name": "Session",
+    "summary": "tmux-based session lifecycle: create, watch, auto-resume, remove offline",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/SessionManager.js", "lib/Watcher.js"]
+  },
+  {
+    "id": "web",
+    "type": "domain",
+    "name": "Web",
+    "summary": "Optional HTTP dashboard and JSON API for remote session monitoring",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js"]
+  },
+  {
+    "id": "core",
+    "type": "domain",
+    "name": "Core",
+    "summary": "Shared utilities: config persistence (~/.claude-pilot/config.json) and Telegram notifications",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/config.js", "lib/notifier.js"]
+  },
+  {
+    "id": "cli-launch-session",
+    "type": "capability",
+    "name": "Launch Session",
+    "summary": "Spawn a new Claude Code session in a named tmux window",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["bin/claude-pilot.js"]
+  },
+  {
+    "id": "cli-list-sessions",
+    "type": "capability",
+    "name": "List Sessions",
+    "summary": "Display active/offline sessions in interactive readline menu",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["bin/claude-pilot.js"]
+  },
+  {
+    "id": "cli-manage-lifecycle",
+    "type": "capability",
+    "name": "Manage Session Lifecycle",
+    "summary": "Orchestrate start/stop/remove sessions; handle graceful exit",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["bin/claude-pilot.js"]
+  },
+  {
+    "id": "session-create",
+    "type": "capability",
+    "name": "Create Session",
+    "summary": "Create tmux window, send claude command, register in config, start Watcher",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/SessionManager.js"]
+  },
+  {
+    "id": "session-resume",
+    "type": "capability",
+    "name": "Auto-Resume Session",
+    "summary": "Restart Claude in existing tmux window on unexpected exit",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/SessionManager.js", "lib/Watcher.js"]
+  },
+  {
+    "id": "session-watch-process",
+    "type": "capability",
+    "name": "Watch Process",
+    "summary": "Poll tmux pane for exit or stale output; fire callbacks",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/Watcher.js"]
+  },
+  {
+    "id": "session-remove-offline",
+    "type": "capability",
+    "name": "Remove Offline Sessions",
+    "summary": "Remove dead sessions from config and kill tmux windows",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/SessionManager.js"]
+  },
+  {
+    "id": "web-serve-dashboard",
+    "type": "capability",
+    "name": "Serve Dashboard",
+    "summary": "Serve embedded HTML dashboard with session status and version info",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js"]
+  },
+  {
+    "id": "web-session-api",
+    "type": "capability",
+    "name": "Session API",
+    "summary": "GET /api/sessions and POST /api/sessions/:name/action endpoints",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js"]
+  },
+  {
+    "id": "web-token-auth",
+    "type": "capability",
+    "name": "Token Authentication",
+    "summary": "Single static token auth via ?token= query param or Bearer header",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js"]
+  },
+  {
+    "id": "core-load-config",
+    "type": "capability",
+    "name": "Load Config",
+    "summary": "Read ~/.claude-pilot/config.json; return defaults if missing",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/config.js"]
+  },
+  {
+    "id": "core-save-config",
+    "type": "capability",
+    "name": "Save Config",
+    "summary": "Persist in-memory config to ~/.claude-pilot/config.json",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/config.js"]
+  },
+  {
+    "id": "core-send-notification",
+    "type": "capability",
+    "name": "Send Notification",
+    "summary": "Send Telegram message via curl on session events; silent if unconfigured",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/notifier.js"]
+  },
+  {
+    "id": "cli-launch-flow",
+    "type": "flow",
+    "name": "Launch Flow",
+    "summary": "Startup to supervised session: config load → setup → web start → menu → create session → watch",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["bin/claude-pilot.js", "lib/SessionManager.js", "lib/Watcher.js", "lib/notifier.js"]
+  },
+  {
+    "id": "session-watch-flow",
+    "type": "flow",
+    "name": "Watch and Resume Flow",
+    "summary": "Poll → detect exit → resume → notify",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/Watcher.js", "lib/SessionManager.js", "lib/notifier.js"]
+  },
+  {
+    "id": "web-request-flow",
+    "type": "flow",
+    "name": "Web Request Flow",
+    "summary": "Token check → route → read config → response",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js", "lib/config.js"]
+  },
+  {
+    "id": "session-tmux-concept",
+    "type": "concept",
+    "name": "Tmux Session Model",
+    "summary": "Claude sessions = tmux windows inside one tmux session; window name = session name",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/SessionManager.js", "bin/claude-pilot.js"]
+  },
+  {
+    "id": "session-auto-resume-concept",
+    "type": "concept",
+    "name": "Auto-Resume Concept",
+    "summary": "Watcher re-sends claude command on unexpected exit; fails silently if tmux window was killed",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/Watcher.js", "lib/SessionManager.js"]
+  },
+  {
+    "id": "web-token-auth-concept",
+    "type": "concept",
+    "name": "Web Token Auth Concept",
+    "summary": "Static token, no rotation, designed for trusted-network use only",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js"]
+  },
+  {
+    "id": "core-config-persistence-concept",
+    "type": "concept",
+    "name": "Config Persistence Concept",
+    "summary": "Single JSON file, no cache singleton, no database; concurrent write risk exists",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/config.js"]
+  },
+  {
+    "id": "core-notification-concept",
+    "type": "concept",
+    "name": "Telegram Notification Concept",
+    "summary": "curl-based, opt-in, fail-silent; no SDK dependency",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["lib/notifier.js"]
+  },
+  {
+    "id": "cli-setup-prefs-concept",
+    "type": "concept",
+    "name": "Setup Preferences Concept",
+    "summary": "First-run interactive wizard; skipped when setupDone=true in config",
+    "status": "active",
+    "confidence": "source_supported",
+    "source_files": ["bin/claude-pilot.js"]
+  },
+  {
+    "id": "web-token-no-rotation-risk",
+    "type": "caveat",
+    "severity": "med",
+    "name": "Static Web Token — No Rotation",
+    "summary": "Web auth token never rotates; if config file is world-readable, token is permanently exposed",
+    "status": "needs_review",
+    "confidence": "source_supported",
+    "source_files": ["lib/WebServer.js", "lib/config.js"]
+  },
+  {
+    "id": "config-concurrent-write-risk",
+    "type": "caveat",
+    "severity": "low",
+    "name": "Config Concurrent Write Risk",
+    "summary": "No locking on config.json writes; concurrent mutations from CLI and web server could race",
+    "status": "needs_review",
+    "confidence": "inferred",
+    "source_files": ["lib/config.js"]
+  },
+  {
+    "id": "resume-window-killed-risk",
+    "type": "caveat",
+    "severity": "low",
+    "name": "Resume Fails When tmux Window Killed",
+    "summary": "Auto-resume silently fails if the tmux window (not just the process) was killed; no user feedback",
+    "status": "needs_review",
+    "confidence": "inferred",
+    "source_files": ["lib/Watcher.js", "lib/SessionManager.js"]
+  }
+]

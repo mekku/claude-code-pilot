@@ -1,0 +1,56 @@
+{
+  "bin/claude-pilot.js": [
+    "cli",
+    "cli-launch-session",
+    "cli-list-sessions",
+    "cli-manage-lifecycle",
+    "cli-launch-flow",
+    "session-tmux-concept",
+    "cli-setup-prefs-concept"
+  ],
+  "lib/SessionManager.js": [
+    "session",
+    "session-create",
+    "session-resume",
+    "session-remove-offline",
+    "cli-launch-flow",
+    "session-watch-flow",
+    "session-tmux-concept",
+    "session-auto-resume-concept",
+    "resume-window-killed-risk"
+  ],
+  "lib/Watcher.js": [
+    "session",
+    "session-resume",
+    "session-watch-process",
+    "cli-launch-flow",
+    "session-watch-flow",
+    "session-auto-resume-concept",
+    "resume-window-killed-risk"
+  ],
+  "lib/WebServer.js": [
+    "web",
+    "web-serve-dashboard",
+    "web-session-api",
+    "web-token-auth",
+    "web-request-flow",
+    "web-token-auth-concept",
+    "web-token-no-rotation-risk"
+  ],
+  "lib/config.js": [
+    "core",
+    "core-load-config",
+    "core-save-config",
+    "web-request-flow",
+    "core-config-persistence-concept",
+    "web-token-no-rotation-risk",
+    "config-concurrent-write-risk"
+  ],
+  "lib/notifier.js": [
+    "core",
+    "core-send-notification",
+    "cli-launch-flow",
+    "session-watch-flow",
+    "core-notification-concept"
+  ]
+}

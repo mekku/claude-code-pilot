@@ -184,6 +184,7 @@
   .detail-actions{display:flex;gap:8px;flex-wrap:wrap;}
 
   .detail-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+  .detail-sidebar{display:flex;flex-direction:column;gap:0;overflow-y:auto;}
   .detail-sidebar .card{padding:16px;}
   .detail-sidebar h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:12px;}
 
@@ -1338,7 +1339,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
           )}
         </div>
 
-        {/* Info sidebar */}
+        {/* Info + Queue sidebar */}
         <div className="detail-sidebar">
           <div className="card">
             <h3>Session Info</h3>
@@ -1373,10 +1374,9 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
               </div>
             </div>
           </div>
+          <QueuePanel session={session} />
         </div>
       </div>
-
-      <QueuePanel session={session} />
     </div>
   );
 }

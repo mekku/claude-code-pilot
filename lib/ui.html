@@ -187,6 +187,11 @@
   .detail-sidebar{display:flex;flex-direction:column;gap:0;overflow-y:auto;}
   .detail-sidebar .card{padding:16px;}
   .detail-sidebar h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:12px;}
+  .tab-bar{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px;gap:0;}
+  .tab-btn{padding:7px 16px;font-size:13px;font-weight:500;font-family:var(--font-body);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;color:var(--fg-secondary);transition:color 0.15s,border-color 0.15s;display:flex;align-items:center;gap:6px;}
+  .tab-btn.active{color:var(--fg);border-bottom-color:var(--accent);}
+  .tab-btn:hover{color:var(--fg);}
+  .tab-badge{background:var(--accent-soft);color:var(--accent);font-family:var(--font-mono);font-size:10px;padding:1px 5px;border-radius:8px;font-weight:700;}
 
   .info-row{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;}
   .info-label{color:var(--muted);}
@@ -873,6 +878,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
   const [respawnError, setRespawnError] = useState('');
   const [copyOk, setCopyOk] = useState(false);
   const [finderOk, setFinderOk] = useState(false);
+  const [activeTab, setActiveTab] = useState('terminal');
   const [connecting, setConnecting] = useState(!isOffline);
   const [pollError, setPollError] = useState(false);
   const terminalRef = useRef(null);
@@ -919,8 +925,9 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
     }).catch(() => {});
   }, [session.name]);
 
-  // Auto-focus input on mount and when session changes
+  // Auto-focus input on mount and when session changes; reset to terminal tab
   useEffect(() => {
+    setActiveTab('terminal');
     if (!isOffline) setTimeout(() => inputRef.current?.focus(), 50);
   }, [session.name, isOffline]);
 
@@ -1215,6 +1222,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
     <div>
       <button className="back-link" onClick={onBack}>{Icons.arrow} Back</button>
 
+
       <div className="detail-header">
         <div>
           <h2 className="detail-title">{emoji ? <span style={{ marginRight: 6 }}>{emoji}</span> : null}{session.name}</h2>
@@ -1267,7 +1275,16 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
         </div>
       </div>
 
-      <div className="detail-grid">
+      <div className="tab-bar">
+        <button className={`tab-btn ${activeTab === 'terminal' ? 'active' : ''}`} onClick={() => setActiveTab('terminal')}>
+          ⬛ Terminal
+        </button>
+        <button className={`tab-btn ${activeTab === 'git' ? 'active' : ''}`} onClick={() => setActiveTab('git')}>
+          ± Git
+        </button>
+      </div>
+
+      {activeTab === 'terminal' && <div className="detail-grid">
         {/* Terminal — fills available height, input pinned at bottom */}
         <div className="terminal" style={terminalStyle}>
           <div className="terminal-header">
@@ -1387,9 +1404,10 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
             </div>
           </div>
           <QueuePanel session={session} />
-          <GitPanel session={session} />
         </div>
-      </div>
+      </div>}
+
+      {activeTab === 'git' && <GitPanel session={session} fullWidth />}
     </div>
   );
 }
@@ -1565,7 +1583,7 @@ function BroadcastBar({ activeSessions }) {
 }
 
 /* --- Git Panel --- */
-function GitPanel({ session }) {
+function GitPanel({ session, fullWidth }) {
   const [files, setFiles] = useState([]);
   const [notGit, setNotGit] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -1599,7 +1617,11 @@ function GitPanel({ session }) {
       .catch(() => setDiffLoading(false));
   }, [session.name, selectedFile]);
 
+  // Reset selected file when session changes
+  useEffect(() => { setSelectedFile(null); setChecked(new Set()); setCommitMsg(''); }, [session.name]);
+
   const toggleCheck = (f) => setChecked(prev => { const n = new Set(prev); n.has(f) ? n.delete(f) : n.add(f); return n; });
+  const toggleAll = () => setChecked(prev => prev.size === files.length ? new Set() : new Set(files.map(f => f.file)));
 
   const commit = async () => {
     if (!commitMsg.trim() || committing) return;
@@ -1612,14 +1634,12 @@ function GitPanel({ session }) {
       });
       const d = await res.json();
       if (!res.ok) { setCommitErr(d.error || 'Commit failed'); return; }
-      setCommitMsg(''); setChecked(new Set()); setSelectedFile(null);
+      setCommitMsg(''); setChecked(new Set()); setSelectedFile(null); setDiff('');
       setCommitOk(true); setTimeout(() => setCommitOk(false), 2500);
       apiFetch(`/api/sessions/${encodeURIComponent(session.name)}/git/status`, { cache: 'no-store' })
         .then(r => r.json()).then(d => setFiles(d.files || [])).catch(() => {});
     } finally { setCommitting(false); }
   };
-
-  if (notGit || !files.length) return null;
 
   const statusMeta = (s) => {
     if (s === '??' || s === 'A') return { icon: '+', color: 'var(--success)' };
@@ -1633,16 +1653,95 @@ function GitPanel({ session }) {
     else if (line.startsWith('-') && !line.startsWith('---')) { color = 'oklch(70% 0.18 25)'; bg = 'oklch(20% 0.08 25 / 0.35)'; }
     else if (line.startsWith('@@')) { color = 'oklch(72% 0.12 250)'; }
     else if (line.startsWith('diff ') || line.startsWith('index ') || line.startsWith('---') || line.startsWith('+++')) { color = 'oklch(48% 0.015 70)'; }
-    return <div key={i} style={{ color, background: bg, padding: '0 6px', fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5, whiteSpace: 'pre', overflowX: 'visible' }}>{line || '​'}</div>;
+    return <div key={i} style={{ color, background: bg, padding: '0 8px', fontFamily: 'var(--font-mono)', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre', minWidth: 'max-content' }}>{line || '​'}</div>;
   });
 
+  // ── full-width tab layout ──────────────────────────────────────────────────
+  if (fullWidth) {
+    const panelH = 'calc(100vh - 240px)';
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, height: panelH }}>
+        {/* Commit bar */}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+          <input
+            className="form-input"
+            placeholder={notGit ? 'Not a git repository' : files.length ? 'Commit message…' : 'Working tree clean'}
+            value={commitMsg}
+            onChange={e => setCommitMsg(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && commit()}
+            disabled={!files.length || notGit}
+            style={{ flex: 1, fontSize: 13 }}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={commit}
+            disabled={committing || !commitMsg.trim() || !files.length}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {commitOk ? '✓ Committed' : committing ? 'Committing…' : `↑ Commit${checked.size ? ` (${checked.size})` : ' all'}`}
+          </button>
+          {commitErr && <span style={{ fontSize: 12, color: 'var(--error)' }}>{commitErr}</span>}
+        </div>
+
+        {/* Two-column body */}
+        <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '260px 1fr', gap: 12 }}>
+          {/* Left: file list */}
+          <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'var(--surface)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {notGit ? 'No repo' : `${files.length} file${files.length !== 1 ? 's' : ''}`}
+              </span>
+              {files.length > 0 && (
+                <button onClick={toggleAll} style={{ fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', padding: 0 }}>
+                  {checked.size === files.length ? 'Deselect all' : 'Select all'}
+                </button>
+              )}
+            </div>
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              {notGit && <div style={{ padding: 16, color: 'var(--muted)', fontSize: 12 }}>Not a git repository.</div>}
+              {!notGit && files.length === 0 && <div style={{ padding: 16, color: 'var(--muted)', fontSize: 12 }}>Working tree clean.</div>}
+              {files.map((f, i) => {
+                const { icon, color } = statusMeta(f.status);
+                const isSelected = selectedFile === f.file;
+                return (
+                  <div key={f.file} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: isSelected ? 'var(--accent-soft)' : 'transparent', borderBottom: i < files.length - 1 ? '1px solid var(--border)' : 'none', cursor: 'pointer' }}
+                    onClick={() => setSelectedFile(isSelected ? null : f.file)}>
+                    <input type="checkbox" checked={checked.has(f.file)} onClick={e => e.stopPropagation()} onChange={() => toggleCheck(f.file)} style={{ cursor: 'pointer', flexShrink: 0, accentColor: 'var(--accent)' }} />
+                    <span style={{ color, fontFamily: 'var(--font-mono)', fontSize: 12, flexShrink: 0, width: 14, textAlign: 'center', fontWeight: 700 }}>{icon}</span>
+                    <span style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: 12, color: isSelected ? 'var(--accent)' : 'var(--fg)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.file}>{f.file}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right: diff viewer */}
+          <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'oklch(13% 0.012 50)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {!selectedFile && (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'oklch(45% 0.015 70)', fontSize: 13, fontFamily: 'var(--font-mono)' }}>
+                ← select a file to view diff
+              </div>
+            )}
+            {selectedFile && diffLoading && (
+              <div style={{ padding: 16, color: 'oklch(45% 0.015 70)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>Loading…</div>
+            )}
+            {selectedFile && !diffLoading && !diff && (
+              <div style={{ padding: 16, color: 'oklch(45% 0.015 70)', fontSize: 12, fontFamily: 'var(--font-mono)' }}>No diff available for this file.</div>
+            )}
+            {selectedFile && !diffLoading && diff && (
+              <div style={{ padding: '8px 0' }}>{renderDiff(diff)}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── compact sidebar layout (fallback, not currently used) ──────────────────
+  if (notGit || !files.length) return null;
   return (
     <div className="card" style={{ padding: '14px 16px', marginTop: 0 }}>
-      <h3 style={{ marginBottom: 10 }}>
-        Changes
-        <span style={{ background: 'var(--accent-soft)', color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: 11, padding: '1px 6px', borderRadius: 8, fontWeight: 700, marginLeft: 6 }}>{files.length}</span>
-      </h3>
-
+      <h3 style={{ marginBottom: 10 }}>Changes <span style={{ background: 'var(--accent-soft)', color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: 11, padding: '1px 6px', borderRadius: 8, fontWeight: 700, marginLeft: 4 }}>{files.length}</span></h3>
       <div style={{ marginBottom: 10, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
         {files.map((f, i) => {
           const { icon, color } = statusMeta(f.status);
@@ -1651,35 +1750,21 @@ function GitPanel({ session }) {
             <div key={f.file} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', background: isSelected ? 'var(--accent-soft)' : 'transparent', borderBottom: i < files.length - 1 ? '1px solid var(--border)' : 'none' }}>
               <input type="checkbox" checked={checked.has(f.file)} onChange={() => toggleCheck(f.file)} style={{ cursor: 'pointer', flexShrink: 0, accentColor: 'var(--accent)' }} />
               <span style={{ color, fontFamily: 'var(--font-mono)', fontSize: 11, flexShrink: 0, width: 12, textAlign: 'center' }}>{icon}</span>
-              <button
-                onClick={() => setSelectedFile(isSelected ? null : f.file)}
-                style={{ flex: 1, background: 'none', border: 'none', cursor: 'pointer', color: isSelected ? 'var(--accent)' : 'var(--fg)', fontFamily: 'var(--font-mono)', fontSize: 11, textAlign: 'left', padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                title={f.file}
-              >{f.file}</button>
+              <button onClick={() => setSelectedFile(isSelected ? null : f.file)} style={{ flex: 1, background: 'none', border: 'none', cursor: 'pointer', color: isSelected ? 'var(--accent)' : 'var(--fg)', fontFamily: 'var(--font-mono)', fontSize: 11, textAlign: 'left', padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.file}>{f.file}</button>
             </div>
           );
         })}
       </div>
-
       {selectedFile && (
         <div style={{ marginBottom: 10, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', background: 'oklch(12% 0.012 50)', overflow: 'auto', maxHeight: 280 }}>
-          {diffLoading
-            ? <div style={{ padding: 12, color: 'var(--muted)', fontSize: 11 }}>Loading…</div>
+          {diffLoading ? <div style={{ padding: 12, color: 'var(--muted)', fontSize: 11 }}>Loading…</div>
             : diff ? renderDiff(diff) : <div style={{ padding: 12, color: 'var(--muted)', fontSize: 11 }}>No diff</div>}
         </div>
       )}
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <input
-          className="form-input"
-          placeholder="Commit message…"
-          value={commitMsg}
-          onChange={e => setCommitMsg(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && commit()}
-          style={{ fontSize: 12 }}
-        />
+        <input className="form-input" placeholder="Commit message…" value={commitMsg} onChange={e => setCommitMsg(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ fontSize: 12 }} />
         <button className="btn btn-sm btn-primary" onClick={commit} disabled={committing || !commitMsg.trim()}>
-          {commitOk ? '✓ Committed' : committing ? 'Committing…' : `↑ Commit${checked.size ? ` (${checked.size} files)` : ' all'}`}
+          {commitOk ? '✓ Committed' : committing ? 'Committing…' : `↑ Commit${checked.size ? ` (${checked.size})` : ' all'}`}
         </button>
         {commitErr && <div style={{ fontSize: 11, color: 'var(--error)', wordBreak: 'break-word' }}>{commitErr}</div>}
       </div>

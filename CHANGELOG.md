@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.3 — 2026-05-08
+
+### Changed
+- README rewritten for end users — no internal API routes or implementation details
+- Technical API reference and architecture overview moved to new `DEVELOPMENT.md`
+
+---
+
 ## 0.8.2 — 2026-05-08
 
 ### Changed

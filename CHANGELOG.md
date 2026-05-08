@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.7 — 2026-05-09
+
+### Changed
+- **Terminal Enter behaviour**: Enter sends the message; Ctrl+Enter inserts a newline (swapped from 0.8.4).
+- **Mobile input zoom fix**: terminal textarea uses `font-size: 16px` on mobile, preventing iOS Safari from zooming the viewport on focus.
+
+---
+
 ## 0.8.6 — 2026-05-09
 
 ### Changed

@@ -246,6 +246,7 @@
     .terminal-input-row{width:100%;}
     .terminal-keys{overflow-x:auto;padding-bottom:2px;}
     .btn-key{min-height:40px;padding:4px 10px;font-size:12px;}
+    .terminal-input{font-size:16px;} /* prevent iOS zoom on focus */
   }
 
   @media (min-width:768px) {
@@ -1134,10 +1135,19 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); sendMessage(); return; }
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      // Ctrl/Cmd+Enter: insert newline at cursor
+      e.preventDefault();
+      const el = e.target;
+      const s = el.selectionStart, end = el.selectionEnd;
+      const next = msg.slice(0, s) + '\n' + msg.slice(end);
+      setMsg(next);
+      requestAnimationFrame(() => { el.selectionStart = el.selectionEnd = s + 1; });
+      return;
+    }
     if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); sendKey('Enter'); return; }
     if (e.key === 'Enter' && !msg.trim()) { e.preventDefault(); sendKey('Enter'); return; }
-    // Enter with text: let browser insert a newline naturally in the textarea
+    if (e.key === 'Enter') { e.preventDefault(); sendMessage(); return; }
     // Arrow keys: forward to tmux when input is empty (navigate Claude menus),
     // navigate command history when there's text in the input.
     if (e.key === 'ArrowUp') {
@@ -1364,7 +1374,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
                 <textarea
                   ref={inputRef}
                   className="terminal-input"
-                  placeholder="send a message… (Enter = new line, Ctrl+Enter = send)"
+                  placeholder="send a message… (Enter = send, Ctrl+Enter = new line)"
                   value={msg}
                   rows={1}
                   onChange={e => setMsg(e.target.value)}
@@ -1373,7 +1383,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
                   spellCheck={false}
                   autoCorrect="off"
                 />
-                <button className="btn-key btn-key-send" onClick={sendMessage} disabled={!msg.trim() || sending || isOffline} title="Send (Ctrl+Enter)">↵ Send</button>
+                <button className="btn-key btn-key-send" onClick={sendMessage} disabled={!msg.trim() || sending || isOffline} title="Send (Enter)">↵ Send</button>
               </div>
               <div className="terminal-keys">
                 <button className="btn-key" onClick={() => sendKey('Escape')} title="Escape">Esc</button>

@@ -215,11 +215,11 @@
   .terminal-body::-webkit-scrollbar-thumb{background:oklch(30% 0.02 50);border-radius:3px;}
 
   /* Menu CTA strip — numbered choice buttons that appear above the input */
-  .menu-cta-strip{display:flex;align-items:center;gap:6px;padding:8px 14px;background:oklch(16% 0.015 50);border-top:1px solid oklch(28% 0.02 50);flex-wrap:wrap;flex-shrink:0;}
-  .menu-cta-btn{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--radius-sm);border:1px solid oklch(38% 0.02 50);background:oklch(22% 0.018 50);color:oklch(82% 0.015 70);font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:background 0.12s,border-color 0.12s;max-width:260px;}
+  .menu-cta-strip{display:flex;flex-direction:column;gap:4px;padding:8px 14px;background:oklch(16% 0.015 50);border-top:1px solid oklch(28% 0.02 50);flex-shrink:0;}
+  .menu-cta-btn{display:flex;width:100%;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--radius-sm);border:1px solid oklch(38% 0.02 50);background:oklch(22% 0.018 50);color:oklch(82% 0.015 70);font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:background 0.12s,border-color 0.12s;}
   .menu-cta-btn:hover{background:oklch(28% 0.02 50);border-color:var(--accent);}
   .menu-cta-num{font-weight:700;color:var(--accent);flex-shrink:0;}
-  .menu-cta-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .menu-cta-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
 
   @media (min-width:768px) {
     .app-shell{flex-direction:row;}
@@ -648,9 +648,9 @@ function SessionCard({ session, onNavigate }) {
       )}
 
       {hasMenu && (
-        <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }} onClick={e => e.stopPropagation()}>
           {session.menuOptions.map(opt => (
-            <button key={opt.num} className="menu-cta-btn" style={{ flex: '0 0 auto', maxWidth: 200 }} onClick={e => sendMenuOption(e, opt.num)}>
+            <button key={opt.num} className="menu-cta-btn" title={opt.label} onClick={e => sendMenuOption(e, opt.num)}>
               <span className="menu-cta-num">{opt.num}</span>
               <span className="menu-cta-text">{opt.label}</span>
             </button>
@@ -1094,21 +1094,21 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
           {/* Numbered-choice CTA strip — appears when Claude shows a 1/2/3 menu */}
           {!isOffline && session.status === 'needs-response' && (
             <div className="menu-cta-strip">
+              {parsedSource === 'model' && displayOptions.length > 0 && (
+                <span style={{ fontSize: 10, color: 'oklch(50% 0.018 50)', fontFamily: 'var(--font-mono)' }}>⚡ ollama</span>
+              )}
               {displayOptions.map(opt => (
-                <button key={opt.num} className="menu-cta-btn" onClick={() => sendMenuOption(opt.num)}>
+                <button key={opt.num} className="menu-cta-btn" title={opt.label} onClick={() => sendMenuOption(opt.num)}>
                   <span className="menu-cta-num">{opt.num}</span>
                   <span className="menu-cta-text">{opt.label}</span>
                 </button>
               ))}
               {displayOptions.length === 0 && !parseLoading && (
-                <button className="btn-key" style={{ fontSize: 11 }} onClick={parseWithModel} title="Use local AI model (ollama) to detect menu options">
+                <button className="btn-key" style={{ fontSize: 11, alignSelf: 'flex-start' }} onClick={parseWithModel} title="Use local AI model (ollama) to detect menu options">
                   Parse options…
                 </button>
               )}
               {parseLoading && <span style={{ fontSize: 11, color: 'oklch(55% 0.018 50)', fontFamily: 'var(--font-mono)' }}>parsing…</span>}
-              {parsedSource === 'model' && displayOptions.length > 0 && (
-                <span style={{ marginLeft: 'auto', fontSize: 10, color: 'oklch(50% 0.018 50)', fontFamily: 'var(--font-mono)' }}>⚡ ollama</span>
-              )}
             </div>
           )}
 

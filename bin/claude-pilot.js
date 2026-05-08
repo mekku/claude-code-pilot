@@ -151,7 +151,7 @@ function buildAllSessions(manager) {
   const offline = history
     .filter(h => !activeNames.has(h.name))
     .map(h => ({ name: h.name, path: h.path, status: 'offline', startedAt: h.lastSeen, resumeAt: null }));
-  return [...active, ...offline];
+  return [...active, ...offline].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function renderWatchTable(allSessions, selectedIdx, webServer = null) {

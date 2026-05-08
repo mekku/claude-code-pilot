@@ -577,6 +577,110 @@ function SortControl({ sortBy, onSortChange }) {
   );
 }
 
+/* --- Session Card (dashboard grid) --- */
+function SessionCard({ session, onNavigate }) {
+  const isOffline = session.status === 'offline';
+  const [quickMsg, setQuickMsg] = useState('');
+  const [sending, setSending] = useState(false);
+  const inputRef = useRef(null);
+
+  const sendQuick = async () => {
+    if (!quickMsg.trim() || sending || isOffline) return;
+    setSending(true);
+    try {
+      await apiFetch(`/api/sessions/${encodeURIComponent(session.name)}/send`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: quickMsg }),
+      });
+      setQuickMsg('');
+    } catch {}
+    finally { setSending(false); setTimeout(() => inputRef.current?.focus(), 0); }
+  };
+
+  const sendMenuOption = async (e, targetNum) => {
+    e.stopPropagation();
+    const delta = targetNum - 1; // option 1 is the ❯ default
+    for (let i = 0; i < delta; i++) {
+      await apiFetch(`/api/sessions/${encodeURIComponent(session.name)}/send`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'Down' }),
+      });
+      await new Promise(r => setTimeout(r, 80));
+    }
+    await apiFetch(`/api/sessions/${encodeURIComponent(session.name)}/send`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'Enter' }),
+    });
+  };
+
+  const hasMenu = !isOffline && session.status === 'needs-response'
+    && session.menuOptions && session.menuOptions.length >= 2;
+
+  return (
+    <div
+      className={`session-card ${isOffline ? 'offline' : ''}`}
+      style={session.color ? { borderLeft: `4px solid ${session.color}` } : {}}
+      onClick={() => onNavigate('detail', session)}
+    >
+      <div className="session-card-header">
+        <div>
+          <div className="session-card-name">{session.emoji ? <span style={{ marginRight: 5 }}>{session.emoji}</span> : null}{session.name}</div>
+          <div className="session-card-meta" style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.path}</div>
+        </div>
+        <StatusPill status={session.status} />
+      </div>
+
+      {session.snippet && !isOffline && (
+        <div style={{ margin: '8px 0 0', padding: '5px 8px', background: 'oklch(14% 0.015 50)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'oklch(65% 0.015 70)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {session.snippet}
+        </div>
+      )}
+
+      <div className="session-card-body">
+        <div className="session-card-field"><div className="session-card-field-label">Started</div><div className="session-card-field-value">{relativeTime(session.startedAt)}</div></div>
+        <div className="session-card-field"><div className="session-card-field-label">Tokens</div><div className="session-card-field-value">{formatTokens(session.tokens)}</div></div>
+      </div>
+
+      {(session.queueLength > 0 || session.autoFeed) && (
+        <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          {session.autoFeed ? '⚡' : '⏳'} {session.queueLength} message{session.queueLength !== 1 ? 's' : ''} queued{session.autoFeed ? ' · auto-feed' : ''}
+        </div>
+      )}
+
+      {hasMenu && (
+        <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+          {session.menuOptions.map(opt => (
+            <button key={opt.num} className="menu-cta-btn" style={{ flex: '0 0 auto', maxWidth: 200 }} onClick={e => sendMenuOption(e, opt.num)}>
+              <span className="menu-cta-num">{opt.num}</span>
+              <span className="menu-cta-text">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!isOffline && (
+        <div style={{ marginTop: 8 }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <input
+              ref={inputRef}
+              className="form-input"
+              style={{ fontSize: 11, padding: '4px 8px', flex: 1, minWidth: 0 }}
+              placeholder="Quick reply…"
+              value={quickMsg}
+              onChange={e => setQuickMsg(e.target.value)}
+              onKeyDown={e => { e.stopPropagation(); if (e.key === 'Enter') sendQuick(); }}
+              disabled={sending}
+              spellCheck={false}
+              autoComplete="off"
+            />
+            <button className="btn btn-sm" style={{ flexShrink: 0 }} onClick={e => { e.stopPropagation(); sendQuick(); }} disabled={sending || !quickMsg.trim()}>→</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* --- Dashboard --- */
 function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy, onSortChange }) {
   const sorted = sortSessions(sessions, sortBy);
@@ -610,28 +714,7 @@ function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy,
         </div>
       ) : (
         <div className="session-cards">
-          {sorted.map(s => (
-            <div key={s.id} className={`session-card ${s.status === 'offline' ? 'offline' : ''}`}
-              style={s.color ? { borderLeft: `4px solid ${s.color}` } : {}}
-              onClick={() => onNavigate('detail', s)}>
-              <div className="session-card-header">
-                <div>
-                  <div className="session-card-name">{s.emoji ? <span style={{ marginRight: 5 }}>{s.emoji}</span> : null}{s.name}</div>
-                  <div className="session-card-meta" style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.path}</div>
-                </div>
-                <StatusPill status={s.status} />
-              </div>
-              <div className="session-card-body">
-                <div className="session-card-field"><div className="session-card-field-label">Started</div><div className="session-card-field-value">{relativeTime(s.startedAt)}</div></div>
-                <div className="session-card-field"><div className="session-card-field-label">Tokens</div><div className="session-card-field-value">{formatTokens(s.tokens)}</div></div>
-              </div>
-              {(s.queueLength > 0 || s.autoFeed) && (
-                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {s.autoFeed ? '⚡' : '⏳'} {s.queueLength} message{s.queueLength !== 1 ? 's' : ''} queued{s.autoFeed ? ' · auto-feed' : ''}
-                </div>
-              )}
-            </div>
-          ))}
+          {sorted.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
         </div>
       )}
 

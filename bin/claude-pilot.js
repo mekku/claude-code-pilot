@@ -234,6 +234,7 @@ function startWatch(manager, rl) {
     process.stdin.removeListener('keypress', onKeypress);
     stopTimer();
     process.stdout.write('\x1B[2J\x1B[0f');
+    console.log('  Type help for commands · exit to quit.\n');
     rl.write(null, { ctrl: true, name: 'u' });
     rl.prompt();
   }
@@ -516,7 +517,6 @@ ${HELP}`);
 
   setupRl.close();
 
-  console.log('  Type help for commands · exit to quit.\n');
   const replRl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -528,6 +528,7 @@ ${HELP}`);
   if (allAtStart.length) {
     startWatch(manager, replRl);
   } else {
+    console.log('  Type help for commands · exit to quit.\n');
     replRl.prompt();
   }
 

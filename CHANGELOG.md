@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.6 — 2026-05-08
+
+### Fixed
+- **Exit hint timing**: `Type help for commands · exit to quit.` was printed before watch mode started, so watch immediately cleared the screen and swallowed it. Now printed when exiting watch (on `q`) and on startup when there are no sessions to watch.
+
+---
+
 ## 0.7.5 — 2026-05-08
 
 ### Added

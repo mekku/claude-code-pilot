@@ -45,6 +45,7 @@ It's a practical helper tool for people who run Claude Code for extended periods
 - Spawn and supervise multiple Claude Code sessions, each in its own persistent tmux window
 - Auto-detect token limit states and resume automatically
 - Sessions outlive the pilot process — restart the pilot without losing your work
+- **Terminal resize sync** — tmux pane dimensions automatically match your browser viewport so Claude's menus and borders render at the correct width
 
 **Web dashboard**
 - Full-color terminal output rendered in the browser (24-bit ANSI, bold, dim, italic)
@@ -472,6 +473,7 @@ When using the tunnel feature, always set a password. Anyone with the URL can co
 - [x] menu choice detection — numbered menus become CTA buttons; ollama fallback for tricky output
 - [x] dashboard quick-reply and snippet preview per session card (Off/2/4/6/8 line toggle)
 - [x] Telegram on/off toggle — dashboard + CLI, with needs-response debounce
+- [x] terminal resize sync — tmux pane tracks browser viewport via ResizeObserver
 - [ ] smarter retry logic
 - [ ] usage statistics and session timeline
 - [ ] pluggable notification providers

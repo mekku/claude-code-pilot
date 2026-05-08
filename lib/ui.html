@@ -831,6 +831,45 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
     if (!isOffline) setTimeout(() => inputRef.current?.focus(), 50);
   }, [session.name, isOffline]);
 
+  // Resize tmux pane to match the web terminal viewport
+  useEffect(() => {
+    if (isOffline || !terminalRef.current) return;
+    const el = terminalRef.current;
+    let debounce = null;
+
+    const sendResize = () => {
+      // Measure a single monospace character to get cell dimensions
+      const probe = document.createElement('span');
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;' +
+        'font-family:var(--font-mono);font-size:12px;line-height:1.5;';
+      probe.textContent = 'M';
+      el.appendChild(probe);
+      const charW = probe.getBoundingClientRect().width || 7.2;
+      const charH = probe.getBoundingClientRect().height || 18;
+      el.removeChild(probe);
+
+      const pad = 16; // matches .terminal-body padding
+      const cols = Math.max(40, Math.floor((el.clientWidth  - pad * 2) / charW));
+      const rows = Math.max(10, Math.floor((el.clientHeight - pad * 2) / charH));
+
+      apiFetch(`/api/sessions/${encodeURIComponent(session.name)}/resize`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cols, rows }),
+      }).catch(() => {});
+    };
+
+    const onResize = () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(sendResize, 80);
+    };
+
+    // Initial resize after layout settles, then watch for container size changes
+    debounce = setTimeout(sendResize, 150);
+    const ro = new ResizeObserver(onResize);
+    ro.observe(el);
+    return () => { ro.disconnect(); clearTimeout(debounce); };
+  }, [session.name, isOffline]);
+
   // Poll terminal output at near-realtime cadence
   useEffect(() => {
     if (isOffline) {

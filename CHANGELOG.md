@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.6 — 2026-05-08
+
+### Added
+- **Terminal resize sync**: the web terminal now tells tmux the correct pane dimensions. On entering the session detail view, the pane is resized to match the browser viewport; a `ResizeObserver` keeps it in sync as you resize the window. This prevents Claude's menus and borders from being drawn at the wrong width.
+
+---
+
 ## 0.6.5 — 2026-05-08
 
 ### Added

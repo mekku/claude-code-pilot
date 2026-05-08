@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.4 — 2026-05-08
+
+### Added
+- **Snippet line count control**: the dashboard header now has a "Snippet: Off 1 2 3 4" toggle. Pick how many terminal lines to show per session card, or turn them off entirely. Choice is saved across reloads.
+
+---
+
 ## 0.6.3 — 2026-05-08
 
 ### Fixed

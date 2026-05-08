@@ -577,8 +577,27 @@ function SortControl({ sortBy, onSortChange }) {
   );
 }
 
+/* --- Snippet lines control --- */
+function SnippetControl({ snippetLines, onSnippetChange }) {
+  const opts = [{ val: 0, label: 'Off' }, { val: 1, label: '1' }, { val: 2, label: '2' }, { val: 3, label: '3' }, { val: 4, label: '4' }];
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 2 }}>Snippet:</span>
+      {opts.map(({ val, label }) => (
+        <button key={val} onClick={() => onSnippetChange(val)} style={{
+          fontSize: 11, padding: '3px 7px', borderRadius: 4, cursor: 'pointer',
+          border: '1px solid var(--border)',
+          background: snippetLines === val ? 'var(--accent-soft)' : 'var(--bg)',
+          color: snippetLines === val ? 'var(--accent)' : 'var(--muted)',
+          fontWeight: snippetLines === val ? 600 : 400,
+        }}>{label}</button>
+      ))}
+    </div>
+  );
+}
+
 /* --- Session Card (dashboard grid) --- */
-function SessionCard({ session, onNavigate }) {
+function SessionCard({ session, onNavigate, snippetLines }) {
   const isOffline = session.status === 'offline';
   const [quickMsg, setQuickMsg] = useState('');
   const [sending, setSending] = useState(false);
@@ -630,9 +649,9 @@ function SessionCard({ session, onNavigate }) {
         <StatusPill status={session.status} />
       </div>
 
-      {session.snippet && !isOffline && (
+      {session.snippet && !isOffline && snippetLines > 0 && (
         <div style={{ margin: '8px 0 0', padding: '5px 8px', background: 'oklch(14% 0.015 50)', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'oklch(65% 0.015 70)', whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.5 }}>
-          {session.snippet}
+          {session.snippet.split('\n').slice(-snippetLines).join('\n')}
         </div>
       )}
 
@@ -682,7 +701,7 @@ function SessionCard({ session, onNavigate }) {
 }
 
 /* --- Dashboard --- */
-function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy, onSortChange }) {
+function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy, onSortChange, snippetLines, onSnippetChange }) {
   const sorted = sortSessions(sessions, sortBy);
   const running = sessions.filter(s => s.status === 'running');
   const active = sessions.filter(s => s.status !== 'offline');
@@ -701,6 +720,7 @@ function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy,
       <div className="section-header">
         <h2 className="section-title">Sessions</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <SnippetControl snippetLines={snippetLines} onSnippetChange={onSnippetChange} />
           <SortControl sortBy={sortBy} onSortChange={onSortChange} />
           <button className="btn btn-sm" onClick={() => onNavigate('create')}>{Icons.plus} New</button>
         </div>
@@ -714,7 +734,7 @@ function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy,
         </div>
       ) : (
         <div className="session-cards">
-          {sorted.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} />)}
+          {sorted.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} snippetLines={snippetLines} />)}
         </div>
       )}
 
@@ -1502,6 +1522,8 @@ function App() {
   const [dark, setDark] = useState(savedTheme === 'dark');
   const [sortBy, setSortByState] = useState(storage.getItem('ccp-sort') || 'status');
   const setSortBy = (v) => { setSortByState(v); storage.setItem('ccp-sort', v); };
+  const [snippetLines, setSnippetLinesState] = useState(parseInt(storage.getItem('ccp-snippet-lines') ?? '4', 10));
+  const setSnippetLines = (v) => { setSnippetLinesState(v); storage.setItem('ccp-snippet-lines', String(v)); };
   const [screen, setScreen] = useState('dashboard');
   const [selectedSession, setSelectedSession] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1610,7 +1632,7 @@ function App() {
 
   const renderScreen = () => {
     switch (screen) {
-      case 'dashboard': return <DashboardScreen onNavigate={navigate} sessions={sessions} activity={activity} serverStatus={serverStatus} sortBy={sortBy} onSortChange={setSortBy} />;
+      case 'dashboard': return <DashboardScreen onNavigate={navigate} sessions={sessions} activity={activity} serverStatus={serverStatus} sortBy={sortBy} onSortChange={setSortBy} snippetLines={snippetLines} onSnippetChange={setSnippetLines} />;
       case 'sessions':  return <SessionsScreen sessions={sessions} onNavigate={navigate} sortBy={sortBy} onSortChange={setSortBy} />;
       case 'create':    return <CreateSessionScreen onBack={() => navigate('dashboard')} onCreated={s => navigate('detail', s)} />;
       case 'detail':    return <SessionDetailScreen session={selectedSession} onBack={() => navigate('dashboard')} onKilled={() => navigate('sessions')} onRespawned={(respawned) => {

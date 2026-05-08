@@ -1,6 +1,6 @@
 # Tasks
 
-## Current version: 0.6.6 (published)
+## Current version: 0.6.7 (published)
 
 ---
 
@@ -68,6 +68,11 @@
 ## Completed (v0.6.6)
 - [x] WebServer.js: POST /api/sessions/:name/resize → tmux resize-pane
 - [x] ui.html: ResizeObserver on terminal-body; measures char cell size, sends cols/rows on mount and window resize (80ms debounce)
+
+## Completed (v0.6.7)
+- [x] ui.html: CTA button hit feedback — clicked button turns green + ✓, all disabled 2.5s then reset for retry
+- [x] Applied to both SessionDetailScreen CTA strip and SessionCard dashboard buttons
+- [x] ctaHit state cleared when session leaves needs-response status
 
 ---
 

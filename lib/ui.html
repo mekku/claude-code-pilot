@@ -224,6 +224,15 @@
   .menu-cta-num{font-weight:700;color:var(--accent);flex-shrink:0;}
   .menu-cta-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
 
+  /* Mobile touch targets and layout fixes */
+  @media (max-width:767px) {
+    .section-header{flex-direction:column;align-items:flex-start;gap:10px;}
+    .section-header > div{width:100%;flex-wrap:wrap;}
+    .menu-cta-btn{min-height:44px;font-size:13px;}
+    .terminal-footer{overflow-x:auto;gap:6px;padding:8px 10px;}
+    .btn-key{min-height:36px;padding:4px 10px;font-size:12px;}
+  }
+
   @media (min-width:768px) {
     .app-shell{flex-direction:row;}
     .sidebar{position:static;width:var(--sidebar-w);height:100vh;max-height:none;transform:none;border-bottom:none;border-right:1px solid var(--border);border-radius:0;display:flex;flex-direction:column;}

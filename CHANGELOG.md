@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.8 — 2026-05-08
+
+### Added
+- **Telegram dashboard URL**: needs-response and limit-hit notifications now include a tap-to-open URL. On LAN-bound (`0.0.0.0`) setups the LAN IP is used; once a cloudflared tunnel is ready that URL takes over. URL is set on the shared `telegram` object so all Watcher instances pick it up automatically.
+
+### Changed
+- **Mobile layout**: section-header controls stack vertically on narrow screens. CTA menu buttons get a 44 px min-height touch target. Terminal footer key buttons (↑ ↓ ⇥ etc.) get a 36 px min-height and the footer scrolls horizontally when it overflows.
+
+---
+
 ## 0.6.7 — 2026-05-08
 
 ### Changed

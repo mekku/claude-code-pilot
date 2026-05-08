@@ -69,6 +69,7 @@ It's a practical helper tool for people who run Claude Code for extended periods
 
 **Notifications**
 - Telegram alerts for limit hits, status changes, and tunnel URL on startup
+- **Tap-to-open URL** in every actionable notification — uses LAN IP when bound to `0.0.0.0`, upgrades to the cloudflared tunnel URL when available
 - **Telegram on/off toggle** — mute without removing credentials, from the dashboard or CLI (`telegram on|off`)
 - Needs-response alerts debounced to at most once per minute per session
 
@@ -474,6 +475,8 @@ When using the tunnel feature, always set a password. Anyone with the URL can co
 - [x] dashboard quick-reply and snippet preview per session card (Off/2/4/6/8 line toggle)
 - [x] Telegram on/off toggle — dashboard + CLI, with needs-response debounce
 - [x] terminal resize sync — tmux pane tracks browser viewport via ResizeObserver
+- [x] Telegram notifications include tap-to-open dashboard URL (LAN → tunnel upgrade)
+- [x] mobile UX — section controls stack vertically, 44px CTA touch targets, scrollable footer keys
 - [ ] smarter retry logic
 - [ ] usage statistics and session timeline
 - [ ] pluggable notification providers

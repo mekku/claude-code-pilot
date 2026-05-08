@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 — 2026-05-08
+
+### Fixed
+- **Session cards overflowing on mobile**: added `min-width:0` to `.session-card` (grid items default to `min-width:auto` and refused to shrink below content width) and `overflow-x:hidden` to `.content` so wide children can't expand the scroll area. Session path text now uses `min-width:0` instead of a hardcoded `maxWidth:220px`.
+
+---
+
 ## 0.6.9 — 2026-05-08
 
 ### Fixed

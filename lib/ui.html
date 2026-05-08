@@ -102,10 +102,10 @@
   .theme-toggle{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg);color:var(--fg-secondary);cursor:pointer;font-size:12px;font-family:var(--font-body);transition:border-color 0.15s;}
   .theme-toggle:hover{border-color:var(--muted);}
 
-  .content{flex:1;overflow-y:auto;padding:16px;}
+  .content{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;}
 
   .session-cards{display:grid;grid-template-columns:1fr;gap:12px;}
-  .session-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
+  .session-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;min-width:0;}
   .session-card:hover{border-color:var(--muted);box-shadow:var(--shadow-md);}
   .session-card.offline{opacity:0.6;}
   .session-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
@@ -680,7 +680,7 @@ function SessionCard({ session, onNavigate, snippetLines }) {
       <div className="session-card-header">
         <div>
           <div className="session-card-name">{session.emoji ? <span style={{ marginRight: 5 }}>{session.emoji}</span> : null}{session.name}</div>
-          <div className="session-card-meta" style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.path}</div>
+          <div className="session-card-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{session.path}</div>
         </div>
         <StatusPill status={session.status} />
       </div>

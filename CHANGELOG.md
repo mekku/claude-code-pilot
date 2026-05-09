@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.5 — 2026-05-09
+
+### Fixed
+- **Quota fetch blocked by workspace trust dialog**: when the pilot server runs from `$HOME`, claude shows a trust dialog on startup and never reaches the main prompt. Fixed by passing `--dangerously-skip-permissions` to the claude invocation inside `_fetchQuota()`.
+
+---
+
 ## 0.12.3 — 2026-05-09
 
 ### Fixed

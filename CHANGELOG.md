@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.1 — 2026-05-09
+
+### Added
+- **Session & week quota bars**: sysinfo bar now shows `Ses XX%` and `Wk XX%` progress bars sourced from `claude /usage`. The server spawns a hidden tmux session, runs claude, sends `/usage`, captures the TUI output, and parses the percentages and reset times. Cached 5 minutes. `CLAUDE_PATH` env var overrides the binary location.
+
+---
+
 ## 0.12.0 — 2026-05-09
 
 ### Added

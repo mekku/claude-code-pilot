@@ -871,14 +871,17 @@ function fmtTok(n) {
 function SysInfoBar() {
   const [info, setInfo] = useState(null);
   const [usage, setUsage] = useState(null);
+  const [quota, setQuota] = useState(null);
   useEffect(() => {
     let mounted = true;
-    const fetchSys = () => apiFetch('/api/sysinfo', { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted) setInfo(d); }).catch(() => {});
-    const fetchUsage = () => apiFetch('/api/usage', { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted) setUsage(d); }).catch(() => {});
-    fetchSys(); fetchUsage();
-    const t1 = setInterval(fetchSys, 5000);
+    const fetchSys   = () => apiFetch('/api/sysinfo', { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted) setInfo(d); }).catch(() => {});
+    const fetchUsage = () => apiFetch('/api/usage',   { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted) setUsage(d); }).catch(() => {});
+    const fetchQuota = () => apiFetch('/api/quota',   { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted && d) setQuota(d); }).catch(() => {});
+    fetchSys(); fetchUsage(); fetchQuota();
+    const t1 = setInterval(fetchSys,   5000);
     const t2 = setInterval(fetchUsage, 60000);
-    return () => { mounted = false; clearInterval(t1); clearInterval(t2); };
+    const t3 = setInterval(fetchQuota, 5 * 60000); // trigger background refresh every 5 min
+    return () => { mounted = false; clearInterval(t1); clearInterval(t2); clearInterval(t3); };
   }, []);
   const fmt = (bytes) => {
     const g = bytes / 1073741824;
@@ -887,7 +890,7 @@ function SysInfoBar() {
   const barColor = (pct) => pct > 85 ? 'var(--error)' : pct > 60 ? 'var(--warning)' : 'var(--success)';
   const memPct = info?.totalMem ? Math.round(info.usedMem / info.totalMem * 100) : 0;
   const diskPct = info?.diskTotal ? Math.round(info.diskUsed / info.diskTotal * 100) : 0;
-  if (!info && !usage) return null;
+  if (!info && !usage && !quota) return null;
   return (
     <div className="sysinfo-bar">
       {info && <>
@@ -909,6 +912,20 @@ function SysInfoBar() {
           </div>
         )}
       </>}
+      {quota && quota.sessionPct != null && (
+        <div className="sysinfo-item" title={quota.sessionReset ? `Resets ${quota.sessionReset}` : ''}>
+          <span className="sysinfo-label">Ses</span>
+          <div className="sysinfo-bar-track"><div className="sysinfo-bar-fill" style={{ width: quota.sessionPct + '%', background: barColor(quota.sessionPct) }} /></div>
+          <span style={{ color: barColor(quota.sessionPct) }}>{quota.sessionPct}%</span>
+        </div>
+      )}
+      {quota && quota.weekPct != null && (
+        <div className="sysinfo-item" title={quota.weekReset ? `Resets ${quota.weekReset}` : ''}>
+          <span className="sysinfo-label">Wk</span>
+          <div className="sysinfo-bar-track"><div className="sysinfo-bar-fill" style={{ width: quota.weekPct + '%', background: barColor(quota.weekPct) }} /></div>
+          <span style={{ color: barColor(quota.weekPct) }}>{quota.weekPct}%</span>
+        </div>
+      )}
       {usage && usage.limitResetAt && (
         <div className="sysinfo-item" style={{ color: 'var(--warning)', fontWeight: 600, gap: 6 }}>
           <span>⚠ LIMIT</span>
@@ -918,7 +935,7 @@ function SysInfoBar() {
         </div>
       )}
       {usage && (
-        <div className="sysinfo-item" style={{ marginLeft: usage.limitResetAt ? 8 : 'auto' }}>
+        <div className="sysinfo-item" style={{ marginLeft: 'auto' }}>
           <span className="sysinfo-label">7d</span>
           <span title={`Output: ${fmtTok(usage.weekOutput)} · Input: ${fmtTok(usage.weekInput)} · Cache read: ${fmtTok(usage.weekCacheRead)} · Messages: ${usage.weekMessages} · Sessions: ${usage.weekSessions}`}>
             {fmtTok(usage.weekOutput)}out

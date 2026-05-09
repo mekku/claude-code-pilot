@@ -49,6 +49,12 @@ Top of the page:
 
 Result is cached in `_usageCache` for 60 s to avoid repeated filesystem scans. Added in v0.11.0; extended with activity counts and limit reset fields in v0.11.1.
 
+## Quota endpoint
+
+`GET /api/quota` — returns `{ sessionPct, sessionReset, weekPct, weekReset }` parsed from `claude /usage` TUI output. Implementation: spawns a hidden tmux session running `claude`, waits ~4 s for it to start, sends `/usage\n`, waits ~3 s for the TUI to render, captures the pane with `tmux capture-pane -p -J`, kills the session, then parses the text with regex. Result is cached for 5 minutes. Returns `null` immediately if cache is empty (first request triggers background fetch; subsequent polls pick up data). The `CLAUDE_PATH` env var overrides the `claude` binary location. Added in v0.13.0.
+
+SysInfoBar polls `/api/quota` every 5 minutes; on first load it sends the request to trigger the background fetch and receives `null` (no bars shown). After ~7 s the fetch completes and the next poll renders the `Ses XX%` and `Wk XX%` progress bars.
+
 ## Entry point
 
 `lib/WebServer.js` — started by `bin/claude-pilot.js` when `--web` flag is set or user picks the option

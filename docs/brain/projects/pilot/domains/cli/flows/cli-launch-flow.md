@@ -10,7 +10,7 @@ source_files:
   - lib/SessionManager.js
   - lib/Watcher.js
   - lib/notifier.js
-last_reviewed: 2026-05-08
+last_reviewed: 2026-05-09
 tags:
   - type/flow
   - domain/cli
@@ -25,7 +25,7 @@ End-to-end path from user running `claude-remote-pilot` to a supervised session 
 
 1. `bin/claude-pilot.js` starts → loads config via `lib/config.js`
 2. If setup not done: prompts for tmux session name, Telegram credentials, web port → saves prefs
-3. Checks tmux is running; optionally starts the web server (`lib/WebServer.js`)
+3. Checks tmux is running; optionally starts the web server (`lib/WebServer.js`); always prints the dashboard URL to the terminal — opens a browser only when not in a headless/SSH environment (`isHeadless()` checks `SSH_CLIENT`, `SSH_TTY`, `DISPLAY`)
 4. Displays interactive session menu (readline)
 5. User selects "New session" → `SessionManager.createSession(name, cwd)`
 6. SessionManager creates tmux window → sends `claude` command

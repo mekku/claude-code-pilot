@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.1 — 2026-05-09
+
+### Changed
+- **Active sort — idle sessions by last active time**: idle sessions are now ordered most-recently-active first instead of alphabetically. Running/needs-response sessions still sort by name. `lastActiveAt` timestamp is stamped on the session when it transitions from running → idle.
+- **Mobile terminal header hidden**: the dot bar (colored circles + session name + A±/font-size controls) is no longer shown on mobile — the terminal body fills the full allocated height.
+- **Removed Ctrl+B D hint**: the "Ctrl+B D · detach" label in the terminal header has been removed — it's a tmux keybinding that doesn't apply in the web UI.
+- **Mobile terminal height**: adjusted to `calc(100dvh - 160px)` to better fit within the viewport after hiding the terminal header.
+
+---
+
 ## 0.10.0 — 2026-05-09
 
 ### Added

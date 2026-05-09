@@ -260,6 +260,7 @@
     .detail-actions{display:none;}
     .detail-header{display:none;}
     .terminal-footer.mobile-fixed{position:fixed;bottom:0;left:0;right:0;z-index:50;border-radius:0;}
+    .terminal-header{display:none;}
     .terminal-fsz-btn{background:oklch(26% 0.02 50);border:1px solid oklch(35% 0.02 50);color:oklch(65% 0.018 50);font-size:10px;padding:2px 7px;border-radius:3px;cursor:pointer;line-height:1.5;}
     .terminal-fsz-val{font-size:10px;color:oklch(55% 0.015 70);min-width:22px;text-align:center;font-family:var(--font-mono);}
   }
@@ -326,7 +327,9 @@ function sortSessions(sessions, by) {
   if (by === 'name') return [...sessions].sort((a, b) => a.name.localeCompare(b.name));
   if (by === 'active') return [...sessions].sort((a, b) => {
     const ag = ACTIVE_GROUP_ORDER[a.status] ?? 3, bg = ACTIVE_GROUP_ORDER[b.status] ?? 3;
-    return ag !== bg ? ag - bg : a.name.localeCompare(b.name);
+    if (ag !== bg) return ag - bg;
+    if (ag === 1) return (b.lastActiveAt || 0) - (a.lastActiveAt || 0); // idle: most recently active first
+    return a.name.localeCompare(b.name);
   });
   return [...sessions].sort((a, b) => {
     const ao = STATUS_SORT_ORDER[a.status] ?? 9, bo = STATUS_SORT_ORDER[b.status] ?? 9;
@@ -1342,7 +1345,7 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
 
   // Terminal height: fill viewport minus chrome
   const terminalStyle = isMobile
-    ? { height: 'calc(100dvh - 190px)', minHeight: 200 }
+    ? { height: 'calc(100dvh - 160px)', minHeight: 200 }
     : { height: 'calc(100vh - 280px)', minHeight: 320 };
 
   return (
@@ -1423,7 +1426,6 @@ function SessionDetailScreen({ session, onBack, onKilled, onRespawned }) {
                 <span className="terminal-fsz-val">{termFontSize}</span>
                 <button className="terminal-fsz-btn" onClick={() => changeFontSize(1)} title="Increase font size">A+</button>
               </div>
-              {!isOffline && <span style={{ fontSize: 10, color: 'oklch(42% 0.018 50)', fontFamily: 'var(--font-mono)', marginRight: 10 }}>Ctrl+B D · detach</span>}
               <StatusPill status={session.status} />
             </div>
 

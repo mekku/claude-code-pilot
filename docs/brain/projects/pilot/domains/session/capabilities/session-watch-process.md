@@ -8,7 +8,7 @@ confidence: source_supported
 source_files:
   - lib/Watcher.js
 last_reviewed: 2026-05-09
-version: 0.9.1
+version: 0.10.1
 tags:
   - type/capability
   - domain/session
@@ -24,6 +24,7 @@ Polls the tmux pane every 5 s, detects Claude status transitions (running / need
 - Captures pane content via `tmux capture-pane -S -500` and hashes the last 2 000 chars to detect staleness.
 - Matches ANSI-stripped output against four regexes: `RUNNING_RE` (`esc to interrupt`), `LIMIT_RE` (usage/rate limit phrases), `RESPONSE_RE` (confirmation prompts), and `TOKEN_RE` (footer token counts).
 - Updates `session.status` to one of: `running`, `needs-response`, `limit`, `idle`.
+- On transition to `idle`, stamps `session.lastActiveAt = Date.now()` so the dashboard can sort idle sessions by recency.
 - Calls `onEnded(session)` and stops the interval when the tmux session disappears.
 - Extracts token counts from the Claude Code footer whenever visible and stores them in `session.tokens`.
 

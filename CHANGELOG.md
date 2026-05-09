@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.2 — 2026-05-09
+
+### Fixed
+- **Quota bars now appear**: `Resets` prefix not stripped (leading spaces in captured output). Retry logic changed from 5-min fixed interval to 10s poll-until-data, then 5-min refresh — bars appear ~10s after dashboard loads instead of never.
+
+---
+
 ## 0.12.1 — 2026-05-09
 
 ### Added

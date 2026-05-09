@@ -876,12 +876,24 @@ function SysInfoBar() {
     let mounted = true;
     const fetchSys   = () => apiFetch('/api/sysinfo', { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted) setInfo(d); }).catch(() => {});
     const fetchUsage = () => apiFetch('/api/usage',   { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted) setUsage(d); }).catch(() => {});
-    const fetchQuota = () => apiFetch('/api/quota',   { cache: 'no-store' }).then(r => r.json()).then(d => { if (mounted && d) setQuota(d); }).catch(() => {});
+    let quotaTimer = null;
+    const fetchQuota = () => apiFetch('/api/quota', { cache: 'no-store' }).then(r => r.json()).then(d => {
+      if (!mounted) return;
+      if (d) {
+        setQuota(d);
+        // Got data — switch to slow refresh (5 min)
+        clearTimeout(quotaTimer);
+        quotaTimer = setTimeout(fetchQuota, 5 * 60000);
+      } else {
+        // Still null (background fetch in progress) — retry in 10s
+        clearTimeout(quotaTimer);
+        quotaTimer = setTimeout(fetchQuota, 10000);
+      }
+    }).catch(() => { if (mounted) { clearTimeout(quotaTimer); quotaTimer = setTimeout(fetchQuota, 30000); } });
     fetchSys(); fetchUsage(); fetchQuota();
     const t1 = setInterval(fetchSys,   5000);
     const t2 = setInterval(fetchUsage, 60000);
-    const t3 = setInterval(fetchQuota, 5 * 60000); // trigger background refresh every 5 min
-    return () => { mounted = false; clearInterval(t1); clearInterval(t2); clearInterval(t3); };
+    return () => { mounted = false; clearInterval(t1); clearInterval(t2); clearTimeout(quotaTimer); };
   }, []);
   const fmt = (bytes) => {
     const g = bytes / 1073741824;

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.10 — 2026-05-10
+
+### Fixed
+- **Telegram resume every 5 min**: when a resume command was sent but the limit message re-appeared (Claude not ready), the `_limitHandlingUntil` flag was being cleared immediately, allowing `_handleLimit()` to be called again on the next check cycle. Now the flag stays set for 5 minutes after a resume attempt, giving Claude time to process the command before we retry.
+
+---
+
 ## 0.12.9 — 2026-05-10
 
 ### Fixed

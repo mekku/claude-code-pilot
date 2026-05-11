@@ -7,7 +7,7 @@ status: active
 confidence: source_supported
 source_files:
   - bin/claude-pilot.js
-last_reviewed: 2026-05-08
+last_reviewed: 2026-05-11
 tags:
   - type/concept
   - domain/cli
@@ -24,6 +24,10 @@ On first run, the CLI collects user preferences interactively (tmux session name
 - Uses Node.js `readline` to prompt for each setting
 - Saves preferences via [[core-save-config|saveConfig]] with `setupDone: true`
 - Users can re-run setup by deleting `~/.claude-pilot/config.json` or setting `setupDone: false`
+
+## Startup mount prompt (v0.13.0)
+
+The "Mount current directory?" prompt now also asks for the agent: `claude / opencode / codex`. Any answer other than `opencode` or `codex` defaults to `claude`.
 
 ## Non-obvious detail
 

@@ -8,6 +8,7 @@ confidence: source_supported
 source_files:
   - bin/claude-pilot.js
 last_reviewed: 2026-05-11
+version: 0.13.0
 tags:
   - type/capability
   - domain/cli
@@ -49,6 +50,10 @@ Navigation supports any number of sessions:
 - `k` / `↑` — move selection up (wraps at top)
 - `1`–`9` — quick-select first 9 sessions
 - `Esc` — deselect
+
+## spawn command flags (v0.13.0)
+
+`spawn <path> [name] [--opencode|--codex]` — the `--opencode` and `--codex` flags set the agent command for the new session. Default is `claude`.
 
 ## Entry point
 

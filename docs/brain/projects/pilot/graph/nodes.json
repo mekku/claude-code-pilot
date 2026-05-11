@@ -50,7 +50,7 @@
     "id": "cli-launch-session",
     "type": "capability",
     "name": "Launch Session",
-    "summary": "Spawn a new Claude Code session in a named tmux window",
+    "summary": "Spawn a new agent session (claude/opencode/codex) in a named tmux window; agent selectable at startup prompt or via --opencode/--codex flags on spawn command",
     "status": "active",
     "confidence": "source_supported",
     "source_files": [
@@ -106,7 +106,7 @@
     "id": "session-watch-process",
     "type": "capability",
     "name": "Watch Process",
-    "summary": "Poll tmux pane for exit or stale output; parse usage limits with reset times (including timezone); prevent retry spam when limit persists; fire callbacks",
+    "summary": "Poll tmux pane for exit or stale output; claude: pattern-match running/needs-response/limit/idle; opencode/codex/generic: hash-change running/idle (4 s stagnant → idle); limit auto-resume and token tracking are claude-only",
     "status": "active",
     "confidence": "source_supported",
     "source_files": [

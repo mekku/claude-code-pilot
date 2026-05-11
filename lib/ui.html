@@ -1688,13 +1688,14 @@ function CreateSessionScreen({ onBack, onCreated }) {
         <select className="form-select" value={command} onChange={e => setCommand(e.target.value)}>
           <option value="claude">claude (Claude Code)</option>
           <option value="opencode">opencode</option>
+          <option value="codex">codex (OpenAI)</option>
           <option value="custom">custom…</option>
         </select>
         {command === 'custom' && (
           <input className="form-input" style={{ marginTop: 8 }} placeholder="e.g. aider" value={customCommand} onChange={e => setCustomCommand(e.target.value)} />
         )}
-        {command === 'opencode' && (
-          <div className="form-hint">Status indicators (running/idle) are claude-only — opencode sessions will show as idle but are fully controllable.</div>
+        {(command === 'opencode' || command === 'codex') && (
+          <div className="form-hint">Running/idle detection uses output hash polling. Limit auto-resume and token tracking are claude-only.</div>
         )}
       </div>
       <div className="form-group">

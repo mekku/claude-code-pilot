@@ -7,8 +7,8 @@ status: active
 confidence: source_supported
 source_files:
   - lib/ui.html
-last_reviewed: 2026-05-09
-version: 0.10.1
+last_reviewed: 2026-05-11
+version: 0.13.0
 tags:
   - type/concept
   - domain/web
@@ -37,6 +37,10 @@ The dashboard terminal is a React SPA embedded in `lib/ui.html`. It polls sessio
 - **Session avatar** — each session card shows a 40 px circular `.session-avatar` div on the left of the card header. Displays the session's emoji if set, otherwise the first character of the session name. The avatar background is tinted with `session.color + '33'` (10 % opacity) when a color is set.
 - **Emoji preset picker** — `EmojiPicker` component renders a 12-button grid (`EMOJI_PRESETS`) plus a free-text fallback input. Used in the desktop sidebar "Label" section and the mobile Info tab. Clicking a preset toggles it; free-text supports any custom emoji up to 8 characters. Replaces the old single `<input>` field.
 - **Active sort mode** — default sort is `'active'`: sessions are bucketed by `ACTIVE_GROUP_ORDER` (needs-response and running both get rank 0, idle rank 1, limit/offline/ended rank 2). Within rank 0 (active), sessions sort by name. Within rank 1 (idle), sessions sort by `lastActiveAt` descending — most recently active appears first. Prevents cards from jumping positions when a session flips between `running` and `needs-response`.
+
+## Agent dropdown (v0.13.0)
+
+The Create Session screen agent dropdown includes `claude`, `opencode`, and `codex (OpenAI)`. Selecting opencode or codex shows a hint: "Running/idle detection uses output hash polling. Limit auto-resume and token tracking are claude-only." The hint no longer says status indicators are claude-only (as of v0.13.0 they work for all agents via hash-change detection).
 
 ## Non-obvious details
 

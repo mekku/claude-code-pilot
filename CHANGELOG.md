@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.0 — 2026-05-11
+
+### Added
+- **opencode and Codex CLI support**: sessions launched with `opencode` or `codex` as the agent command now get proper running/idle status tracking via output hash polling (output changes → running; stagnant >4 s → idle). Previously all non-Claude agents showed as `idle` permanently. Auto-limit-resume and token tracking remain Claude-only. Codex added to the web UI agent dropdown alongside opencode.
+- `spawn` CLI command now accepts `--opencode` and `--codex` flags: `spawn <path> [name] --opencode`
+- Startup mount prompt now asks which agent to use (claude / opencode / codex)
+
+---
+
 ## 0.12.16 — 2026-05-11
 
 ### Fixed

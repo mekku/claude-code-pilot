@@ -7,7 +7,8 @@ status: active
 confidence: source_supported
 source_files:
   - bin/claude-pilot.js
-last_reviewed: 2026-05-08
+last_reviewed: 2026-05-11
+version: 0.13.0
 tags:
   - type/capability
   - domain/cli
@@ -16,19 +17,20 @@ tags:
 
 # Launch Session
 
-Spawns a new supervised Claude Code session in a named tmux window. The user provides a working directory and optional session name; the CLI creates the tmux window, starts the `claude` process inside it, records the session in state, and begins watching the process.
+Spawns a new supervised agent session in a named tmux window. Supports claude (default), opencode, and codex. The user provides a working directory, optional session name, and agent; the CLI creates the tmux window, starts the agent process, records the session in state, and begins watching the process.
 
 ## What it does
 
-- Prompts user for session name and working directory (or accepts via CLI args)
+- Prompts user for session name, working directory, and agent (claude / opencode / codex) at startup
+- Accepts `--opencode` / `--codex` flags on the `spawn` REPL command
 - Creates a tmux window (`tmux new-window -n <name>`) inside the configured tmux session
-- Sends the `claude` startup command into the window
+- Sends the selected agent command into the window
 - Registers the session in persistent state via [[core-load-config|Config]] and [[core-save-config|Save Config]]
 - Hands off the session reference to [[session-watch-process|Process Watcher]]
 
 ## Entry point
 
-`bin/claude-pilot.js` — interactive menu option "New session" or `--session` flag
+`bin/claude-pilot.js` — startup mount prompt or `spawn <path> [name] [--opencode|--codex]` REPL command
 
 ## Related
 

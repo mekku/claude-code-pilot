@@ -1,6 +1,16 @@
 # Tasks
 
-## Current version: 0.14.4 (published)
+## Current version: 0.14.6 (published)
+
+## Completed (v0.14.6)
+- [x] lib/SessionManager.js: adopt() now passes command to addToHistory() — was always writing 'claude', overwriting real agent type in history
+- [x] Root cause of "badge always shows claude" even after v0.14.1 fix
+- [x] Published to npm, pushed
+
+## Completed (v0.14.5)
+- [x] lib/ui.html: Files tab gated to !isMobile — hidden on mobile
+- [x] lib/ui.html: FileBrowserPanel embedded as card section in mobile Info tab (scroll down past session info)
+- [x] README updated, KB updated, published, pushed
 
 ## Completed (v0.14.4)
 - [x] README: added password and resume commands to commands table

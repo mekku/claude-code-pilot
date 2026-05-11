@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.14.4 — 2026-05-11
+
+### Changed
+- README: document `password` command and `resume` command in commands table; add password persistence and runtime-change examples to the tunnel section
+
 ## 0.14.3 — 2026-05-11
 
 ### Added

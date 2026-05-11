@@ -20,10 +20,10 @@ Creates a new tmux window for a Claude Code session, records it in config, and s
 
 ## What it does
 
-- Calls `tmux new-window -n <name> -c <cwd>` via `child_process.execSync`
-- Sends the `claude` command into the tmux window via `tmux send-keys`
+- `spawn(dirPath, name, command = 'claude')` — creates a new tmux session running the given command, stores `{ name, path, command, status, startedAt, resumeAt }`, adds to history, starts watcher
+- `adopt(name, dirPath, command = 'claude')` — registers an already-running tmux session for watching; stores `command` in session object so the agent badge in the web UI renders correctly for non-Claude agents
 - Appends the new session entry to persistent config via [[core-save-config|config]]
-- Spawns a [[session-watch-process|Watcher]] instance for the new session
+- Spawns a [[session-watch-process|Watcher]] instance for each session
 
 ## Entry point
 

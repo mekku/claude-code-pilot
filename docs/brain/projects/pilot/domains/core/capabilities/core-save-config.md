@@ -22,6 +22,7 @@ Persists the in-memory config object to disk as JSON. Called after any mutation 
 
 - Ensures `~/.claude-pilot/` directory exists (`fs.mkdirSync` with `recursive: true`)
 - Writes the config object as `JSON.stringify(config, null, 2)` to `config.json`
+- `saveSessions(sessions)` persists `{ name, path, command }` for each active session — the `command` field is required so that sessions re-adopted at the next startup (via the "Re-adopt" prompt) carry their agent type and the agent badge renders correctly
 - Used by SessionManager on session create/remove and by WebServer on token generation
 
 ## Entry point

@@ -26,6 +26,8 @@ Spawns a new supervised agent session in a named tmux window. Supports claude (d
 - Creates a tmux window (`tmux new-window -n <name>`) inside the configured tmux session
 - Sends the selected agent command into the window
 - Registers the session in persistent state via [[core-load-config|Config]] and [[core-save-config|Save Config]]
+- **Re-adopt path**: on startup, sessions from `cfg.sessions` that still exist in tmux are re-adopted via `manager.adopt(s.name, s.path, s.command || 'claude')` — `command` is now persisted in `saveSessions()` so agent type survives a restart
+- **Auto-discover path**: untracked tmux sessions found at startup look up their command via `config.getHistory().find(h => h.name === sessionName)?.command` before calling `adopt()` — falls back to `'claude'` if not in history
 - Hands off the session reference to [[session-watch-process|Process Watcher]]
 
 ## Entry point

@@ -7,7 +7,8 @@ status: active
 confidence: source_supported
 source_files:
   - lib/WebServer.js
-last_reviewed: 2026-05-08
+last_reviewed: 2026-05-11
+version: 0.13.1
 tags:
   - type/capability
   - domain/web
@@ -20,7 +21,7 @@ Exposes HTTP endpoints for querying and acting on sessions from the web dashboar
 
 ## What it does
 
-- Handles `GET /api/sessions` — returns JSON list of all sessions with status
+- Handles `GET /api/sessions` — returns JSON list of all sessions with status; active sessions include all fields spread from the session object (including `command`); offline sessions explicitly include `command: h.command || 'claude'` so agent type is available in the UI even for sessions that are no longer running
 - Handles `POST /api/sessions/:name/action` — triggers actions (attach, remove) on a session
 - Reads live session state from [[core-load-config|config]]
 - All endpoints protected by [[web-token-auth|token authentication]]

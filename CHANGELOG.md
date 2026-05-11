@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.13.1 — 2026-05-11
+
+### Added
+- **Agent badge on every session card** — small colored chip (orange=claude, blue=opencode, green=codex) in the card meta row so the agent is immediately visible without opening detail
+- **Agent badge in Session Info** — replaces the raw command string in detail view (desktop sidebar + mobile Info tab) with the same styled chip
+- **Offline sessions now carry their agent** — `command` field included in offline session API response so the badge renders correctly even after a session ends
+
+### Changed
+- **Auto-yes button hidden for non-Claude sessions** — only shown when agent is `claude`; opencode/codex don't have Claude's permission prompts
+- **Arrow key button tooltips** — "navigate Claude menus" → "navigate menus"
+
+---
+
 ## 0.13.0 — 2026-05-11
 
 ### Added

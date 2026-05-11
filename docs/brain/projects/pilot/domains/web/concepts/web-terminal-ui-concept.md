@@ -38,6 +38,12 @@ The dashboard terminal is a React SPA embedded in `lib/ui.html`. It polls sessio
 - **Emoji preset picker** — `EmojiPicker` component renders a 12-button grid (`EMOJI_PRESETS`) plus a free-text fallback input. Used in the desktop sidebar "Label" section and the mobile Info tab. Clicking a preset toggles it; free-text supports any custom emoji up to 8 characters. Replaces the old single `<input>` field.
 - **Active sort mode** — default sort is `'active'`: sessions are bucketed by `ACTIVE_GROUP_ORDER` (needs-response and running both get rank 0, idle rank 1, limit/offline/ended rank 2). Within rank 0 (active), sessions sort by name. Within rank 1 (idle), sessions sort by `lastActiveAt` descending — most recently active appears first. Prevents cards from jumping positions when a session flips between `running` and `needs-response`.
 
+## Agent badge (v0.13.1)
+
+`detectAgentType(command)` mirrors the Watcher.js logic — strips path prefix and `.exe`, returns `'claude'`, `'opencode'`, `'codex'`, or `'generic'`. `AgentBadge` renders a color-coded pill: orange (claude), blue (opencode), green (codex), muted (generic/custom). The badge appears on every session card (in the meta row alongside the path) and in the Session Info panel (desktop sidebar + mobile Info tab). Offline sessions carry their `command` field from history so the badge renders correctly even when the session is not running.
+
+**Auto-yes** is hidden for non-Claude sessions — the button only renders when `detectAgentType(session.command) === 'claude'`, since opencode/codex don't have Claude's permission-prompt UI.
+
 ## Agent dropdown (v0.13.0)
 
 The Create Session screen agent dropdown includes `claude`, `opencode`, and `codex (OpenAI)`. Selecting opencode or codex shows a hint: "Running/idle detection uses output hash polling. Limit auto-resume and token tracking are claude-only." The hint no longer says status indicators are claude-only (as of v0.13.0 they work for all agents via hash-change detection).

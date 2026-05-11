@@ -35,6 +35,8 @@ How an HTTP request to the dashboard is handled — from token check to response
 
 `_broadcast()` (every 3 s when SSE clients are connected) calls `_buildAllSessions()` → `_getSnippetAndMenu()` → `spawnSync('tmux', ...)` for every session. This is synchronous and blocks the event loop. All queued API requests wait until it completes. The debug log emits `[SLOW]` when a broadcast takes >200 ms.
 
+Since v0.12.15 the entire `_broadcast()` body is wrapped in a top-level try/catch. Exceptions (e.g. a tmux call throwing or JSON serialisation failing) no longer crash the Node.js process; they are logged as `[ERR] broadcast threw: <message>` and the interval continues running.
+
 ## Related
 
 - [[web|Web domain]]

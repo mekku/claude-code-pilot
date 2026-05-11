@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.15 — 2026-05-11
+
+### Fixed
+- **Web server crash on broadcast error**: `_broadcast()` had no top-level try/catch, so any exception thrown by `spawnSync('tmux', ...)` or `JSON.stringify()` became an uncaught exception inside `setInterval`, crashing the entire Node.js process. The HTTP server disappeared and browsers got `ERR_CONNECTION_REFUSED` with no log entry. Now the full broadcast body is wrapped in try/catch and errors are written to the debug log instead of crashing the process.
+
+---
+
 ## 0.12.14 — 2026-05-11
 
 ### Fixed

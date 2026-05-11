@@ -246,7 +246,7 @@
     "id": "web-request-flow",
     "type": "flow",
     "name": "Web Request Flow",
-    "summary": "Token check → route → read config → response; each request logged with timing; broadcast cycles block event loop — root cause of API stalls after SSE connects",
+    "summary": "Token check → route → read config → response; each request logged with timing; broadcast cycles block event loop — stall risk; since v0.12.15 _broadcast() is try/catch guarded so exceptions log as [ERR] instead of crashing the process",
     "status": "active",
     "confidence": "source_supported",
     "source_files": [

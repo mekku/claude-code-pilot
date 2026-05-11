@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.14.6 — 2026-05-11
+
+### Fixed
+- **Agent badge still showing claude after re-adopt** — `adopt()` was calling `addToHistory(name, dirPath)` without passing `command`, silently overwriting any correct agent type in history with `'claude'`. Fixed to pass `command` so history stays accurate across restarts.
+
 ## 0.14.5 — 2026-05-11
 
 ### Changed

@@ -708,6 +708,25 @@ function SnippetControl({ snippetLines, onSnippetChange }) {
   );
 }
 
+/* --- Columns control (desktop only) --- */
+function ColsControl({ cols, onColsChange }) {
+  const opts = [{ val: 0, label: 'Auto' }, { val: 1, label: '1' }, { val: 2, label: '2' }, { val: 3, label: '3' }, { val: 4, label: '4' }];
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 11, color: 'var(--muted)', marginRight: 2 }}>Cols:</span>
+      {opts.map(({ val, label }) => (
+        <button key={val} onClick={() => onColsChange(val)} style={{
+          fontSize: 11, padding: '3px 7px', borderRadius: 4, cursor: 'pointer',
+          border: '1px solid var(--border)',
+          background: cols === val ? 'var(--accent-soft)' : 'var(--bg)',
+          color: cols === val ? 'var(--accent)' : 'var(--muted)',
+          fontWeight: cols === val ? 600 : 400,
+        }}>{label}</button>
+      ))}
+    </div>
+  );
+}
+
 /* --- Sound alert helper --- */
 function playBeep() {
   try {
@@ -975,11 +994,18 @@ function SysInfoBar() {
 }
 
 /* --- Dashboard --- */
-function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy, onSortChange, snippetLines, onSnippetChange, telegramEnabled, hasTelegram, onTelegramToggle, soundOn, onSoundToggle }) {
+function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy, onSortChange, snippetLines, onSnippetChange, telegramEnabled, hasTelegram, onTelegramToggle, soundOn, onSoundToggle, gridCols = 0, onGridColsChange }) {
   const sorted = sortSessions(sessions, sortBy);
   const running = sessions.filter(s => s.status === 'running');
   const active = sessions.filter(s => s.status !== 'offline');
   const port = serverStatus ? serverStatus.port : '—';
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  const cardsStyle = !isMobile && gridCols > 0 ? { gridTemplateColumns: `repeat(${gridCols}, 1fr)` } : {};
 
   return (
     <div>
@@ -998,6 +1024,7 @@ function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy,
           <SoundControl soundOn={soundOn} onToggle={onSoundToggle} />
           <TelegramControl telegramEnabled={telegramEnabled} hasTelegram={hasTelegram} onToggle={onTelegramToggle} />
           <SnippetControl snippetLines={snippetLines} onSnippetChange={onSnippetChange} />
+          {!isMobile && <ColsControl cols={gridCols} onColsChange={onGridColsChange} />}
           <SortControl sortBy={sortBy} onSortChange={onSortChange} />
           <button className="btn btn-sm" onClick={() => onNavigate('create')}>{Icons.plus} New</button>
         </div>
@@ -1010,7 +1037,7 @@ function DashboardScreen({ onNavigate, sessions, activity, serverStatus, sortBy,
           <div className="empty-state-desc">Create a session to get started.</div>
         </div>
       ) : (
-        <div className="session-cards">
+        <div className="session-cards" style={cardsStyle}>
           {sorted.map(s => <SessionCard key={s.id} session={s} onNavigate={onNavigate} snippetLines={snippetLines} />)}
         </div>
       )}
@@ -2187,6 +2214,11 @@ function App() {
   const soundOnRef = useRef(soundOn);
   const setSoundOn = (v) => { setSoundOnState(v); soundOnRef.current = v; storage.setItem('ccp-sound', v ? 'on' : 'off'); };
   const setSnippetLines = (v) => { setSnippetLinesState(v); storage.setItem('ccp-snippet-lines', String(v)); };
+  const [gridCols, setGridColsState] = useState(() => {
+    const v = parseInt(storage.getItem('ccp-cols') ?? '0', 10);
+    return [0, 1, 2, 3, 4].includes(v) ? v : 0;
+  });
+  const setGridCols = (v) => { setGridColsState(v); storage.setItem('ccp-cols', String(v)); };
   const [telegramEnabled, setTelegramEnabled] = useState(true);
   const [hasTelegram, setHasTelegram] = useState(false);
   const [screen, setScreen] = useState('dashboard');
@@ -2311,7 +2343,7 @@ function App() {
 
   const renderScreen = () => {
     switch (screen) {
-      case 'dashboard': return <DashboardScreen onNavigate={navigate} sessions={sessions} activity={activity} serverStatus={serverStatus} sortBy={sortBy} onSortChange={setSortBy} snippetLines={snippetLines} onSnippetChange={setSnippetLines} telegramEnabled={telegramEnabled} hasTelegram={hasTelegram} onTelegramToggle={handleTelegramToggle} soundOn={soundOn} onSoundToggle={setSoundOn} />;
+      case 'dashboard': return <DashboardScreen onNavigate={navigate} sessions={sessions} activity={activity} serverStatus={serverStatus} sortBy={sortBy} onSortChange={setSortBy} snippetLines={snippetLines} onSnippetChange={setSnippetLines} telegramEnabled={telegramEnabled} hasTelegram={hasTelegram} onTelegramToggle={handleTelegramToggle} soundOn={soundOn} onSoundToggle={setSoundOn} gridCols={gridCols} onGridColsChange={setGridCols} />;
       case 'sessions':  return <SessionsScreen sessions={sessions} onNavigate={navigate} sortBy={sortBy} onSortChange={setSortBy} />;
       case 'create':    return <CreateSessionScreen onBack={() => navigate('dashboard')} onCreated={s => navigate('detail', s)} />;
       case 'detail':    return <SessionDetailScreen session={selectedSession} onBack={() => navigate('dashboard')} onKilled={() => navigate('sessions')} onRespawned={(respawned) => {

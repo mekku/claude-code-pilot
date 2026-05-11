@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.2 — 2026-05-11
+
+### Added
+- **Column count selector in dashboard header (desktop only)** — `Cols: Auto · 1 · 2 · 3 · 4` control sets the session card grid to a fixed column count. `Auto` (default) keeps the responsive `repeat(auto-fill, minmax(...))` behaviour. Choice is saved to `localStorage` and restored on reload. Hidden on mobile.
+
+---
+
 ## 0.13.1 — 2026-05-11
 
 ### Added

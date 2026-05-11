@@ -214,6 +214,8 @@ sudo pacman -S tmux
 | `web [port] [host] [password] [--tunnel]` | Start the web dashboard. Defaults to `127.0.0.1:3742`. Add `--tunnel` to start a cloudflared public tunnel automatically. |
 | `attach <name>` | Open a tmux session in the current terminal. |
 | `kill <name>` | Stop a session. |
+| `resume [message]` | Show or set the message sent to Claude after a token limit resets. |
+| `password [value\|clear]` | Set or clear the web dashboard password. Persists across restarts. |
 | `telegram on\|off` | Enable or disable Telegram notifications without removing credentials. |
 | `help` | Show command reference. |
 | `exit` | Quit the pilot. Sessions keep running in tmux. |
@@ -365,6 +367,14 @@ Expose publicly via cloudflared tunnel? (y/N) y
 ```
 
 The tunnel URL is also shown live in the watch mode TUI and sent via Telegram (if configured).
+
+The password is saved to config and pre-filled on every subsequent startup — you won't be prompted again unless you change it. To update or remove it at any time without restarting:
+
+```
+claude-pilot> password mynewpassword   # change password (existing sessions must re-login)
+claude-pilot> password clear           # remove password
+claude-pilot> password                 # show current status
+```
 
 Or start a tunnel from the REPL at any time:
 

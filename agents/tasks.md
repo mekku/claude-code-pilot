@@ -5,7 +5,7 @@
 ## Completed (v0.14.6)
 - [x] lib/SessionManager.js: adopt() now passes command to addToHistory() — was always writing 'claude', overwriting real agent type in history
 - [x] Root cause of "badge always shows claude" even after v0.14.1 fix
-- [x] Published to npm, pushed
+- [x] KB updated (session-create.md), published to npm, pushed
 
 ## Completed (v0.14.5)
 - [x] lib/ui.html: Files tab gated to !isMobile — hidden on mobile

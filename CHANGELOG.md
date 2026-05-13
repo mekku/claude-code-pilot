@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.7 — 2026-05-13
+
+### Added
+- **Telegram inline keyboard buttons** — when Claude needs a response (yes/no or numbered choice), the Telegram notification now includes tappable buttons for each option; tapping sends the choice directly to the tmux session via the bot's callback polling loop.
+- **Sidebar session list** — all sessions appear in the left sidebar with a colored status dot (blinking for `needs-response`), emoji label, and truncated name; clicking any row jumps straight to that session's detail screen.
+- `notifier.sendWithButtons` / `answerCallback` / `startPolling` / `stopPolling` — new Telegram helpers; notifier rewritten from curl/execSync to Node's `https` module.
+- `lib/menuOptions.js` — shared menu-option parser extracted from `WebServer` so `Watcher` and `WebServer` use one implementation.
+- `SessionManager.handleTelegramCallback(data)` — routes `menu:<session>:<num>` callback data to the correct tmux session.
+
 ## 0.14.6 — 2026-05-11
 
 ### Fixed

@@ -7,7 +7,7 @@ status: active
 confidence: source_supported
 source_files:
   - lib/config.js
-last_reviewed: 2026-05-08
+last_reviewed: 2026-05-17
 tags:
   - type/capability
   - domain/core
@@ -23,8 +23,9 @@ Persists the in-memory config object to disk as JSON. Called after any mutation 
 - Ensures `~/.claude-pilot/` directory exists (`fs.mkdirSync` with `recursive: true`)
 - Writes the config object as `JSON.stringify(config, null, 2)` to `config.json`
 - `saveSessions(sessions)` persists `{ name, path, command }` for each active session — the `command` field is required so that sessions re-adopted at the next startup (via the "Re-adopt" prompt) carry their agent type and the agent badge renders correctly
+- `saveSessionCommand(name, command)` — updates only the `command` field in `sessionHistory` for a named session without touching other history fields; called by `PATCH /api/sessions/:name/command` when the user switches agents from the dashboard; takes effect on the next respawn
 - `saveWebPassword(password)` / `getWebPassword()` — persist and retrieve the plaintext web dashboard password; used by the `password` REPL command and the WebServer startup path
-- Used by SessionManager on session create/remove and by WebServer on token generation
+- Used by SessionManager on session create/remove and by WebServer on token generation and agent-command changes
 
 ## Entry point
 

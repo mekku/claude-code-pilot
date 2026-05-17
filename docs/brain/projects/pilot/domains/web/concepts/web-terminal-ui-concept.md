@@ -7,8 +7,8 @@ status: active
 confidence: source_supported
 source_files:
   - lib/ui.html
-last_reviewed: 2026-05-13
-version: 0.14.7
+last_reviewed: 2026-05-17
+version: 0.14.8
 tags:
   - type/concept
   - domain/web
@@ -41,6 +41,17 @@ The dashboard terminal is a React SPA embedded in `lib/ui.html`. It polls sessio
 ## Column count selector (v0.13.2, extended v0.14.2)
 
 `ColsControl` component renders `Cols: Auto · 1 · 2 · 3 · 4 · 6 · 8` in the dashboard section header. Selecting a number sets `gridTemplateColumns: repeat(N, 1fr)` as an inline style on the `.session-cards` div; `Auto` (value `0`) removes the inline style so the CSS responsive `auto-fill` takes over. State is stored in `localStorage` under `ccp-cols` and restored on page load (validated against `[0,1,2,3,4]`). The control and the inline style are both gated behind `!isMobile` — mobile always uses the single-column CSS default. `DashboardScreen` owns a local `isMobile` state (same resize-listener pattern as `SessionDetailScreen`) to drive this gate.
+
+## Agent selector in Session Info (v0.14.8)
+
+The "Agent" row in `SessionDetailScreen`'s Session Info panel (both desktop sidebar and mobile Info tab) is now an interactive `<select>` dropdown with options `claude`, `opencode`, `codex`, and `custom…`. Key behaviours:
+
+- Selecting a preset agent immediately fires `PATCH /api/sessions/:name/command` and on success sets `pendingCommand` state.
+- Selecting `custom…` reveals a text `<input>` below the dropdown; the PATCH fires on blur or Enter.
+- State: `agentSelectVal` (one of the four option values), `agentCustom` (the free-text command string when custom is active), `pendingCommand` (null or the last successfully saved command string).
+- While `pendingCommand !== null`, a `⚠ takes effect after respawn` warning renders below the control.
+- On a successful respawn (`handleRespawn` success path), `setPendingCommand(null)` clears the warning.
+- The initial select value is derived from `session.command`: if it matches a known preset (`claude`/`opencode`/`codex`), that option is pre-selected; otherwise `custom…` is selected and `agentCustom` is seeded with the raw command string.
 
 ## Agent badge (v0.13.1)
 

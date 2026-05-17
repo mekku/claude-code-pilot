@@ -406,7 +406,7 @@ async function handleExit(manager, rl) {
 // ─── REPL ─────────────────────────────────────────────────────────────────────
 
 const HELP = `
-  spawn <path> [name] [--opencode|--codex]   Start agent at path (defaults to claude)
+  spawn <path> [name] [--command <cmd>]       Start agent at path (default: claude)
   list                                       Show all sessions
   watch                                      Live session monitor  (q to exit)
   web [port] [host] [password] [--tunnel]    Start web dashboard  (default: 3742 127.0.0.1)
@@ -503,10 +503,8 @@ ${HELP}`);
 
   if (mount === 'y' || mount === 'yes') {
     const rawName = await questionRaw(setupRl, `Session name [${defaultName}]: `);
-    const agentChoice = await questionRaw(setupRl, `Agent [claude/opencode/codex, default: claude]: `);
-    const mountCmd = ['opencode', 'codex'].includes(agentChoice.trim().toLowerCase())
-      ? agentChoice.trim().toLowerCase()
-      : 'claude';
+    const agentChoice = await questionRaw(setupRl, `Agent command [default: claude]: `);
+    const mountCmd = agentChoice.trim() || 'claude';
     const session = manager.spawn(cwd, rawName || defaultName, mountCmd);
     console.log(`  ✓ "${session.name}" started at ${session.path} (${mountCmd})`);
     console.log(`    tmux attach -t ${session.name}\n`);
@@ -609,12 +607,13 @@ ${HELP}`);
     try {
       switch (cmd) {
         case 'spawn': {
-          if (!args[0]) { console.log('  Usage: spawn <path> [name] [--opencode|--codex]'); break; }
-          const spawnFlags = args.filter(a => a.startsWith('--'));
-          const spawnPositional = args.filter(a => !a.startsWith('--'));
+          if (!args[0]) { console.log('  Usage: spawn <path> [name] [--command <cmd>]'); break; }
+          const cmdFlagIdx = args.indexOf('--command');
+          const spawnPositional = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--command');
           let spawnCmd = 'claude';
-          if (spawnFlags.includes('--opencode')) spawnCmd = 'opencode';
-          else if (spawnFlags.includes('--codex')) spawnCmd = 'codex';
+          if (cmdFlagIdx !== -1 && args[cmdFlagIdx + 1]) spawnCmd = args[cmdFlagIdx + 1];
+          else if (args.includes('--opencode')) spawnCmd = 'opencode';
+          else if (args.includes('--codex')) spawnCmd = 'codex';
           const session = manager.spawn(spawnPositional[0], spawnPositional[1], spawnCmd);
           console.log(`  ✓ "${session.name}" started at ${session.path} (${spawnCmd})`);
           console.log(`    tmux attach -t ${session.name}`);

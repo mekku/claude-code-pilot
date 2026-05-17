@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.8 — 2026-05-17
+
+### Added
+- **Switch agent per session** — the Agent row in the Session Info panel (desktop sidebar + mobile Info tab) is now a dropdown (`claude` / `opencode` / `codex` / `custom…`). Changing it persists the new command to config history immediately; a `⚠ takes effect after respawn` notice appears until the session is respawned.
+- `PATCH /api/sessions/:name/command` — new REST endpoint that updates the session's command in config history and in-memory state.
+- `config.saveSessionCommand(name, command)` — updates the `command` field in `sessionHistory` for the given session name.
+
+### Added (previous)
+- **Shift+Tab (⇤) button** in the terminal key strip; sends `BTab` to tmux (reverse-tab / menu back-navigation).
+
 ## 0.14.7 — 2026-05-13
 
 ### Added

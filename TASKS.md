@@ -84,7 +84,7 @@
 - [x] HTTP server (Node built-in, no Express)
 - [x] SSE live stream (`/events`)
 - [x] REST API
-- [x] session API (spawn, adopt, kill, respawn, list, output)
+- [x] session API (spawn, adopt, kill, respawn, list, output, agent-command update — v0.14.8)
 - [x] send-input API (`/send`, `/queue`)
 - [x] continue-session API (queue + autoFeed)
 - [x] git panel API (status, diff, commit)
@@ -111,6 +111,8 @@
 - [x] system info bar
 - [x] dark/light theme toggle
 - [x] mobile-optimised layout (fixed footer, full-screen terminal)
+- [x] Shift+Tab (⇤) terminal key button (v0.14.8)
+- [x] per-session agent switcher dropdown with pending-respawn notice (v0.14.8)
 
 ---
 
